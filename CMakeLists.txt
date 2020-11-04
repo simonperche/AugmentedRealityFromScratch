@@ -5,7 +5,7 @@ set(APP_NAME AR)
 
 project(${APP_NAME})
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 set(SOURCE_FILES
