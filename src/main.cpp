@@ -47,8 +47,8 @@ int main()
 
     for(const auto& c : corners)
     {
-        multiTracker.push_back(MultiTracker{.tracker = cv::TrackerMOSSE::create(),
-                .ROI = cv::Rect2d(cv::Point2d(c.x - roiSize / 2., c.y - roiSize / 2.), cv::Size2i(roiSize, roiSize))});
+        multiTracker.push_back(MultiTracker{/*.tracker =*/ cv::TrackerMOSSE::create(),
+                /*.ROI =*/ cv::Rect2d(cv::Point2d(c.x - roiSize / 2., c.y - roiSize / 2.), cv::Size2i(roiSize, roiSize))});
         multiTracker.back().tracker->init(frame, multiTracker.back().ROI);
     }
 

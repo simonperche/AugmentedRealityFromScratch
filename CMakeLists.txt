@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 set(APP_NAME AR)
 
 project(${APP_NAME})
-
-set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall")
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -16,5 +14,97 @@ set(SOURCE_FILES
 #list(APPEND HEADERS_FILES
 #        "")
 
+if (CMAKE_COMPILER_IS_GNUCC)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(COMPILATION_FLAGS
+                -Wall
+                -Wextra
+                -Wshadow
+                -pedantic
+                -Wnon-virtual-dtor
+                -Wold-style-cast
+                -Wcast-align
+                -Wunused
+                -Woverloaded-virtual
+                -Wpedantic
+                -Wconversion
+                -Wsign-conversion
+                -Wmisleading-indentation
+                -Wduplicated-cond
+                -Wduplicated-branches
+                -Wlogical-op
+                -Wnull-dereference
+                -Wuseless-cast
+                -Wdouble-promotion
+                -Wformat=2)
+    else()
+        set(COMPILATION_FLAGS
+                -DNDEBUG
+                -Wall
+                -Wextra
+                -Wshadow
+                -pedantic
+                -Wnon-virtual-dtor
+                -Wold-style-cast
+                -Wcast-align
+                -Wunused
+                -Woverloaded-virtual
+                -Wpedantic
+                -Wconversion
+                -Wsign-conversion
+                -Wmisleading-indentation
+                -Wduplicated-cond
+                -Wduplicated-branches
+                -Wlogical-op
+                -Wnull-dereference
+                -Wuseless-cast
+                -Wdouble-promotion
+                -Wformat=2)
+    endif()
+elseif (MSVC)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(COMPILATION_FLAGS
+                /permissive
+                /w14242
+                /w14254
+                /w14263
+                /w14265
+                /w14287
+                /we4289
+                /w14296
+                /w14311
+                /w14545
+                /w14546
+                /w14547
+                /w14549
+                /w14555
+                /w14619
+                /w14640
+                /w14826
+                /w14928)
+    else()
+        set(COMPILATION_FLAGS
+                /permissive
+                /w14242
+                /w14254
+                /w14263
+                /w14265
+                /w14287
+                /we4289
+                /w14296
+                /w14311
+                /w14545
+                /w14546
+                /w14547
+                /w14549
+                /w14555
+                /w14619
+                /w14640
+                /w14826
+                /w14928)
+    endif()
+endif ()
+
 add_executable(${APP_NAME} ${SOURCE_FILES}) # ${HEADERS_FILES})
 target_link_libraries(${APP_NAME} ${OpenCV_LIBS})
+target_compile_options(${APP_NAME} PUBLIC ${COMPILATION_FLAGS})
