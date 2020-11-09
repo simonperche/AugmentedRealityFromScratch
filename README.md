@@ -11,11 +11,11 @@ A this moment, everything has to be done.
 ## Installation
 ### Dependencies
 You will need :
-* [OpenCV](https://opencv.org) (>= version 4)
-* [OpenCV Contrib](https://github.com/opencv/opencv_contrib) with at least *tracking* module
+    * [OpenCV](https://opencv.org) (>= version 4)
+    * [OpenCV Contrib](https://github.com/opencv/opencv_contrib) with at least *tracking* module
 
 In order to get OpenCV contrib, you must compile OpenCV from source.
 ### Build
 This project was tested with :
-* MSVC version 16 (2019)
-* OpenCV 4.5.0 with dynamic linking
+    * MSVC version 16 (2019)
+    * OpenCV 4.5.0 with dynamic linking

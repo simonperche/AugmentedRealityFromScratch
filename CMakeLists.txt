@@ -1,18 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 set(APP_NAME AR)
 
 project(${APP_NAME})
-
-find_package(OpenCV 4 REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
-
-set(SOURCE_FILES
-        src/main.cpp)
-
-#list(APPEND HEADERS_FILES
-#        "")
 
 if (CMAKE_COMPILER_IS_GNUCC)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -105,6 +97,27 @@ elseif (MSVC)
     endif()
 endif ()
 
-add_executable(${APP_NAME} ${SOURCE_FILES}) # ${HEADERS_FILES})
-target_link_libraries(${APP_NAME} ${OpenCV_LIBS})
+
+find_package(OpenCV 4 REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+find_package(Irrlicht)
+include_directories(${IRRLICHT_INCLUDE_DIRS})
+
+set(SOURCE_FILES
+        src/main.cpp
+        src/IrrlichtRenderer.cpp
+        src/IrrlichtRenderer.cpp
+        src/Video.cpp
+        src/Tracking.cpp src/Utils.cpp)
+
+set(HEADERS_FILES
+        headers/View.inl
+        headers/Renderer.hpp
+        headers/IrrlichtRenderer.hpp
+        headers/Video.hpp
+        headers/Tracking.hpp headers/Utils.hpp)
+
+add_executable(${APP_NAME} ${SOURCE_FILES} ${HEADERS_FILES})
+target_link_libraries(${APP_NAME} ${OpenCV_LIBS} ${IRRLICHT_LIBRARIES})
 target_compile_options(${APP_NAME} PUBLIC ${COMPILATION_FLAGS})
