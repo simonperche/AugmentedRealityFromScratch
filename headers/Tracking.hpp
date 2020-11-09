@@ -14,7 +14,7 @@ namespace arfs
     class Tracking
     {
     public:
-        Tracking(const cv::Mat& frame);
+        explicit Tracking(const cv::Mat& frame);
         void update(const cv::Mat& frame);
         void showTrackedPoint(const cv::Mat& frame);
     private:

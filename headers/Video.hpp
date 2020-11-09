@@ -13,8 +13,8 @@ namespace arfs
     {
     public:
         Video(){};
-        Video(std::string name);
-        Video(int camId);
+        explicit Video(const std::string& name);
+        explicit Video(int camId);
         static bool escIsPressed();
         void showFrame(const std::string& winname);
         cv::Mat getNextFrame();

@@ -7,7 +7,7 @@
 
 namespace arfs
 {
-    Video::Video(std::string name)
+    Video::Video(const std::string& name)
             : m_video(name)
     {
         if(!m_video.isOpened())
