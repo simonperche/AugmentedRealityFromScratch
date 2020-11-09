@@ -11,8 +11,8 @@ A this moment, everything has to be done.
 ## Installation
 ### Dependencies
 You will need :
-    * [OpenCV](https://opencv.org) (>= version 4)
-    * [OpenCV Contrib](https://github.com/opencv/opencv_contrib) with at least *tracking* module
+* [OpenCV](https://opencv.org) (>= version 4)
+* [OpenCV Contrib](https://github.com/opencv/opencv_contrib) with at least *tracking* module
 
 You can either compile OpenCV or get it from pre-compiled version.
 
