@@ -17,6 +17,7 @@ namespace arfs
         explicit Tracking(const cv::Mat& frame);
         void update(const cv::Mat& frame);
         void showTrackedPoint(const cv::Mat& frame);
+        cv::Vec2d getAvgMovement();
     private:
         struct TrackedPoint
         {

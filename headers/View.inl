@@ -8,17 +8,32 @@
 #include <type_traits>
 #include "Renderer.hpp"
 
-template<class MyRenderer>
-class View
+namespace arfs
 {
-    static_assert(std::is_base_of<Renderer, MyRenderer>::value, "The renderer must inherit from Renderer.");
-public:
-    void update()
+    template<class MyRenderer>
+    class View
     {
-        m_renderer.update();
-    }
-private:
-    MyRenderer m_renderer{};
-};
+        static_assert(std::is_base_of<Renderer, MyRenderer>::value, "The renderer must inherit from Renderer.");
+    public:
+        View(int x, int y) : m_renderer(x, y) {};
+        void update()
+        {
+            m_renderer.update();
+        }
+
+        void translate(double x, double y, double z)
+        {
+            m_renderer.translate(x, y, z);
+        };
+
+        void setBackgroundImage(const std::string& filename)
+        {
+            m_renderer.setBackgroundImage(filename);
+        };
+
+    private:
+        MyRenderer m_renderer{};
+    };
+}
 
 #endif //AR_VIEW_INL

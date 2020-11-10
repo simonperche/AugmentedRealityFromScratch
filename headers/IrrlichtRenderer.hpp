@@ -5,13 +5,37 @@
 #ifndef AR_IRRLICHT_RENDERER_HPP
 #define AR_IRRLICHT_RENDERER_HPP
 
+#include <irrlicht.h>
 #include "Renderer.hpp"
 
-class IrrlichtRenderer : Renderer
+namespace impl
 {
-public:
-    void update() override;
-};
+    static void deviceDestructor(irr::IrrlichtDevice* ptr)
+    {
+        if(ptr)
+            ptr->drop();
+    }
+}
 
+namespace arfs
+{
+    class IrrlichtRenderer : Renderer
+    {
+    public:
+        IrrlichtRenderer(int x, int y);
+        void update() override;
+        void translate(double x, double y, double z) override;
+        void setBackgroundImage(const std::string& image) override;
+
+    private:
+        std::unique_ptr<irr::IrrlichtDevice, decltype(&impl::deviceDestructor)> m_device;
+        irr::video::IVideoDriver* m_driver{};
+        irr::scene::ISceneManager* m_smgr{};
+        irr::gui::IGUIEnvironment* m_guienv{};
+        irr::scene::ICameraSceneNode* m_camera{};
+        irr::scene::IMeshSceneNode* m_mesh{};
+        irr::video::ITexture* m_backgroundImage{};
+    };
+}
 
 #endif //AR_IRRLICHT_RENDERER_HPP

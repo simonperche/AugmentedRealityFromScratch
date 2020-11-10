@@ -44,6 +44,35 @@ namespace arfs
         }
     }
 
+    cv::Vec2d Tracking::getAvgMovement()
+    {
+        double anglesSum = 0;
+        double distSum = 0;
+        unsigned int nbPoints = 0;
+        auto avgMovement = cv::Vec2d(0,0);
+
+        for(const auto& p : m_trackedPoints)
+        {
+            if(p.isTracked)
+            {
+                distSum += p.lastDistance;
+                anglesSum += p.lastAngle;
+                nbPoints++;
+            }
+        }
+
+        if(nbPoints > 0)
+        {
+            double angleRad = anglesSum / nbPoints;
+            double avgDist = int(distSum / nbPoints);
+            auto P1Arrow = cv::Point2d(100, 100);
+            auto P2Arrow = cv::Point2d(P1Arrow.x + avgDist * std::cos(angleRad), P1Arrow.y + avgDist * std::sin(angleRad));
+            avgMovement = cv::Vec2d(P2Arrow - P1Arrow);
+        }
+
+        return avgMovement;
+    }
+
     void Tracking::showTrackedPoint(const cv::Mat& frame)
     {
         cv::Mat lastFrame = frame.clone();

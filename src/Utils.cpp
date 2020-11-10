@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <opencv2/imgcodecs.hpp>
 #include "../headers/Utils.hpp"
 
 namespace arfs
@@ -16,5 +17,10 @@ namespace arfs
             angle += 2 * Utils::PI;
 
         return angle;
+    }
+
+    void Utils::saveImage(const cv::Mat& img, const std::string& filename)
+    {
+        cv::imwrite(filename, img);
     }
 }
