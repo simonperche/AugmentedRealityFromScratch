@@ -14,6 +14,21 @@ namespace arfs
         cv::Mat gray_frame;
         cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
         cv::goodFeaturesToTrack(gray_frame, m_corners, m_nbTrackersMax, 0.05, 4, cv::Mat(), 7, false, 0.04);
+
+//        constexpr int nbTrackersX = 10;
+//        constexpr int nbTrackersY = 10;
+//        for(int i = 0; i < nbTrackersX; i++)
+//        {
+//            for(int j = 0; j < nbTrackersY; j++)
+//            {
+//                cv::Rect2d ROI = cv::Rect2d(cv::Point2d(int(frame.cols / (nbTrackersX + 1)) * (i + 1),
+//                                                        int(frame.rows / (nbTrackersY + 1)) * (j + 1)),
+//                                            cv::Size2i(m_roiSize, m_roiSize));
+//                m_multiTracker.push_back(Tracker{/*.tracker =*/ cv::TrackerMOSSE::create(),
+//                        /*.ROI =*/ ROI});
+//                m_multiTracker.back().tracker->init(frame, m_multiTracker.back().ROI);
+//            }
+//        }
         for(const auto& c : m_corners)
         {
             m_multiTracker.push_back(Tracker{/*.tracker =*/ cv::TrackerMOSSE::create(),
@@ -22,6 +37,7 @@ namespace arfs
         }
 
         m_trackedPoints = std::vector<TrackedPoint>(m_corners.size());
+//        m_trackedPoints = std::vector<TrackedPoint>(nbTrackersX*nbTrackersY);
     }
 
     void Tracking::update(const cv::Mat& frame)
@@ -73,6 +89,29 @@ namespace arfs
         return avgMovement;
     }
 
+    std::vector<std::pair<cv::Point2d, double>> Tracking::getDepthPoints(const cv::Mat& frame)
+    {
+        auto depthPoints = std::vector<std::pair<cv::Point2d, double>>();
+
+        auto sortTracked = std::vector<TrackedPoint>(m_trackedPoints);
+        std::sort(sortTracked.begin(), sortTracked.end(), [](const TrackedPoint& p1, const TrackedPoint& p2)
+        { return p1.totalDistance < p2.totalDistance; });
+
+        //TODO: if the last point is not tracked, it may be a problem
+        double distanceMax = sortTracked.back().totalDistance;
+
+        for(const auto& trackedPoint : sortTracked)
+        {
+            if(trackedPoint.isTracked)
+            {
+                unsigned int depth = int((trackedPoint.totalDistance / distanceMax) * 255);
+                depthPoints.emplace_back(trackedPoint.lastPosition, depth);
+            }
+        }
+
+        return depthPoints;
+    }
+
     void Tracking::showTrackedPoint(const cv::Mat& frame)
     {
         cv::Mat lastFrame = frame.clone();
@@ -102,23 +141,15 @@ namespace arfs
             cv::arrowedLine(lastFrame, P1Arrow, P2Arrow, cv::Scalar(0, 0, 255), 2, 1);
         }
 
-        auto sortTracked = std::vector<TrackedPoint>(m_trackedPoints);
-        std::sort(sortTracked.begin(), sortTracked.end(), [](const TrackedPoint& p1, const TrackedPoint& p2)
-        { return p1.totalDistance < p2.totalDistance; });
 
-        //TODO: if the last point is not tracked, it may be a problem
-        double distanceMax = sortTracked.back().totalDistance;
+        auto depthPoints = getDepthPoints(frame);
 
-        for(const auto& trackedPoint : sortTracked)
+        for(const auto& p : depthPoints)
         {
-            if(trackedPoint.isTracked)
-            {
-                //Todo: by using linear interpolation, any distance from the camera can be found
-                unsigned int gray = int((trackedPoint.totalDistance / distanceMax) * 255);
-                cv::circle(lastFrame, trackedPoint.lastPosition, m_roiSize / 4, cv::Scalar(gray, gray, gray), -1, 1);
-            }
+            cv::circle(lastFrame, p.first, m_roiSize / 4, cv::Scalar(p.second, p.second, p.second), -1, 1);
         }
 
         imshow("depth", lastFrame);
     }
+
 }

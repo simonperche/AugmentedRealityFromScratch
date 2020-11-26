@@ -24,7 +24,8 @@ namespace arfs
     public:
         IrrlichtRenderer(int x, int y);
         void update() override;
-        void translate(double x, double y, double z) override;
+        void translate(arfs::Vector3d translation) override;
+        void rotate(arfs::Quaternion q) override;
         void setBackgroundImage(const std::string& image) override;
 
     private:

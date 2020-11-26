@@ -21,10 +21,15 @@ namespace arfs
             m_renderer.update();
         }
 
-        void translate(double x, double y, double z)
+        void translate(arfs::Vector3d v)
         {
-            m_renderer.translate(x, y, z);
+            m_renderer.translate(v);
         };
+
+        void rotate(arfs::Quaternion q)
+        {
+            m_renderer.rotate(q);
+        }
 
         void setBackgroundImage(const std::string& filename)
         {

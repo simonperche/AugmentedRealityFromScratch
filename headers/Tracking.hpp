@@ -18,6 +18,7 @@ namespace arfs
         void update(const cv::Mat& frame);
         void showTrackedPoint(const cv::Mat& frame);
         cv::Vec2d getAvgMovement();
+        std::vector<std::pair<cv::Point2d, double>> getDepthPoints(const cv::Mat& frame);
     private:
         struct TrackedPoint
         {

@@ -18,5 +18,5 @@ You can either compile OpenCV or get it from pre-compiled version.
 
 ### Build
 This project was tested with :
-    * MSVC version 16 (2019)
-    * OpenCV 4.5.0 with dynamic linking
+  * MSVC version 16 (2019)
+  * OpenCV 4.5.0 with dynamic linking
