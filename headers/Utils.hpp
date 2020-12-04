@@ -14,6 +14,7 @@ namespace arfs
     public:
         static double angleBetween(const cv::Point &v1, const cv::Point &v2);
         static void saveImage(const cv::Mat& img, const std::string& filename);
+        static void showImage(const cv::Mat& img, const std::string& winname);
         static constexpr double PI = 3.141592653589793238463;
     };
 }

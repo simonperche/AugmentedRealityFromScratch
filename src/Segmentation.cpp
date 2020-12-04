@@ -5,6 +5,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
+#include <iostream>
 #include "../headers/Segmentation.hpp"
 
 namespace arfs
@@ -48,5 +49,36 @@ namespace arfs
         cv::waitKey();
 
         return cv::Mat();
+    }
+
+    cv::Mat Segmentation::extractTag(const cv::Mat& frame)
+    {
+        auto thresh = threshold(frame);
+        std::vector<std::vector<cv::Point>> contours;
+        std::vector<cv::Vec4i> hierarchy;
+        cv::findContours(thresh, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+        auto rng = cv::RNG(12345);
+        cv::Mat drawing = cv::Mat::zeros( thresh.size(), CV_8UC3 );
+        for( size_t i = 0; i< contours.size(); i++ )
+        {
+            if(cv::contourArea(contours[i]) > 1000)
+            {
+                cv::Scalar color = cv::Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
+                drawContours( drawing, contours, (int)i, color, 2, cv::LINE_8, hierarchy, 0 );
+            }
+        }
+        cv::imshow( "Contours", drawing );
+
+        return thresh;
+    }
+
+    cv::Mat Segmentation::threshold(const cv::Mat& img)
+    {
+        cv::Mat thresh;
+        cv::Mat gray;
+        cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
+        cv::adaptiveThreshold(gray, thresh, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 11, 12);
+        return thresh;
     }
 }

@@ -7,7 +7,7 @@ set(APP_NAME AR)
 project(${APP_NAME})
 
 option(BUILD_WITH_IRRLICHT "Build with Irrlicht 3D engine" OFF)
-option(BUILD_WITH_OPENGL "Build with OpenGL library" ON)
+option(BUILD_WITH_OPENGL "Build with OpenGL library" OFF)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")

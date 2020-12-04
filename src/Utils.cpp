@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
 #include "../headers/Utils.hpp"
 
 namespace arfs
@@ -22,5 +23,10 @@ namespace arfs
     void Utils::saveImage(const cv::Mat& img, const std::string& filename)
     {
         cv::imwrite(filename, img);
+    }
+
+    void Utils::showImage(const cv::Mat& img, const std::string& winname)
+    {
+        cv::imshow(winname, img);
     }
 }

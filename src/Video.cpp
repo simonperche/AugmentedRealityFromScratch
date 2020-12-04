@@ -44,11 +44,6 @@ namespace arfs
         return cv::waitKey(1) == 27;
     }
 
-    void Video::showFrame(const std::string& winname)
-    {
-        cv::imshow(winname, getCurrentFrame());
-    }
-
     void Video::restartFromBeginning()
     {
         m_video.set(cv::CAP_PROP_POS_FRAMES, 0);
