@@ -13,7 +13,9 @@ namespace arfs
     {
     public:
         static cv::Mat segmentation(const cv::Mat& img, const std::vector<std::pair<cv::Point2d, double>>& depthPoints);
-        static cv::Mat extractTag(const cv::Mat& frame);
+        static std::vector<std::vector<cv::Point>> extractTagCandidates(const cv::Mat& frame);
+        static std::vector<cv::Point> recognizeTag(const cv::Mat& frame, std::vector<std::vector<cv::Point>> candidates, std::array<int, 64> code);
+        static std::array<int, 64> getARTagCode(const cv::Mat& tag_img);
     private:
         static cv::Mat threshold(const cv::Mat& img);
     };

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include <numeric>
+#include <algorithm>
 #include "../headers/Segmentation.hpp"
 #include "../headers/Utils.hpp"
 
@@ -57,15 +58,16 @@ namespace arfs
         return cv::Mat();
     }
 
-    cv::Mat Segmentation::extractTag(const cv::Mat& frame)
+    std::vector<std::vector<cv::Point>> Segmentation::extractTagCandidates(const cv::Mat& frame)
     {
+        std::vector<std::vector<cv::Point>> candidates{};
         auto thresh = threshold(frame);
         std::vector<std::vector<cv::Point>> contours;
         std::vector<cv::Vec4i> hierarchy;
         cv::findContours(thresh, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
-        auto rng = cv::RNG(12345);
-        auto drawing = cv::Mat(thresh.size(), CV_8UC3, cv::Scalar(0));
+//        auto rng = cv::RNG(12345);
+//        auto drawing = cv::Mat(thresh.size(), CV_8UC3, cv::Scalar(0));
 
         auto frame_copy = frame.clone();
 
@@ -74,8 +76,8 @@ namespace arfs
             if(cv::contourArea(contours[i]) <= 1000)
                 continue;
 
-            cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-            cv::drawContours(drawing, contours, (int) i, color, 2, cv::LINE_8, hierarchy, 0);
+//            cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+//            cv::drawContours(drawing, contours, (int) i, color, 2, cv::LINE_8, hierarchy, 0);
 
             auto hull_mask = cv::Mat(frame.size(), CV_8UC1, cv::Scalar(0));
 
@@ -160,26 +162,27 @@ namespace arfs
             if(points.size() != 4)
                 continue;
 
-            for(const auto& p : points)
-            {
-                cv::circle(hull_mask, p, 5, cv::Scalar(128), cv::FILLED);
-                for(size_t i = 0 ; i < points.size()-1;i++)
-                    cv::line( frame_copy, points[i], points[i+1], cv::Scalar(0,255,0), 1, cv::LINE_AA);
-                cv::line( frame_copy, points[3], points[0], cv::Scalar(0,255,0), 1, cv::LINE_AA);
-                cv::circle(frame_copy, p, 2, cv::Scalar(0,0,255), cv::FILLED);
-            }
+            candidates.push_back(points);
+//            for(const auto& p : points)
+//            {
+//                cv::circle(hull_mask, p, 5, cv::Scalar(128), cv::FILLED);
+//                for(size_t i = 0 ; i < points.size()-1;i++)
+//                    cv::line( frame_copy, points[i], points[i+1], cv::Scalar(0,255,0), 1, cv::LINE_AA);
+//                cv::line( frame_copy, points[3], points[0], cv::Scalar(0,255,0), 1, cv::LINE_AA);
+//                cv::circle(frame_copy, p, 2, cv::Scalar(0,0,255), cv::FILLED);
+//            }
 
-            cv::imshow("hull", hull_mask);
-            cv::Mat warpedSquare(300, 300, CV_8UC3);
-            cv::Mat homography = cv::findHomography(points, std::vector<cv::Point>{cv::Point(0,0) , cv::Point(warpedSquare.cols, 0), cv::Point(warpedSquare.cols, warpedSquare.rows), cv::Point(0, warpedSquare.rows) });
-            warpPerspective(frame, warpedSquare, homography, cv::Size(warpedSquare.cols, warpedSquare.rows));
-            cv::imshow("Square", warpedSquare);
-//            cv::waitKey();
+//            cv::imshow("hull", hull_mask);
+//            cv::Mat warpedSquare(300, 300, CV_8UC3);
+//            cv::Mat homography = cv::findHomography(points, std::vector<cv::Point>{cv::Point(0,0) , cv::Point(warpedSquare.cols, 0), cv::Point(warpedSquare.cols, warpedSquare.rows), cv::Point(0, warpedSquare.rows) });
+//            warpPerspective(frame, warpedSquare, homography, cv::Size(warpedSquare.cols, warpedSquare.rows));
+//            cv::imshow("Square", warpedSquare);
+////            cv::waitKey();
         }
-        cv::imshow("Contours", drawing);
-        cv::imshow("Tag", frame_copy);
+//        cv::imshow("Contours", drawing);
+//        cv::imshow("Tag", frame_copy);
 
-        return thresh;
+        return candidates;
     }
 
     cv::Mat Segmentation::threshold(const cv::Mat& img)
@@ -189,5 +192,65 @@ namespace arfs
         cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
         cv::adaptiveThreshold(gray, thresh, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 11, 12);
         return thresh;
+    }
+
+    std::vector<cv::Point>
+    Segmentation::recognizeTag(const cv::Mat& frame, std::vector<std::vector<cv::Point>> candidates,
+                               std::array<int, 64> code)
+    {
+        std::vector<cv::Point> tag{};
+        for(auto points : candidates)
+        {
+            cv::Mat candidate(300, 300, CV_8UC3);
+            bool found = false;
+
+            //Try all rotations, homography is sensible to order of points
+            for(int rotation = 0 ; rotation < 4 ; rotation++)
+            {
+                std::rotate(points.begin(), points.begin() + 1, points.end());
+                cv::Mat homography = cv::findHomography(points, std::vector<cv::Point>{cv::Point(0, 0),
+                                                                                       cv::Point(candidate.cols, 0),
+                                                                                       cv::Point(candidate.cols,
+                                                                                                 candidate.rows),
+                                                                                       cv::Point(0, candidate.rows)});
+                cv::warpPerspective(frame, candidate, homography, cv::Size(candidate.cols, candidate.rows));
+
+                cv::cvtColor(candidate, candidate, cv::COLOR_BGR2GRAY);
+
+                cv::threshold(candidate, candidate, 0, 255, cv::THRESH_BINARY+cv::THRESH_OTSU);
+
+
+                if(getARTagCode(candidate) == code)
+                {
+                    found = true;
+                    cv::imshow("candidate", candidate);
+                    tag = points;
+                    break;
+                }
+            }
+
+            if(found) break;
+        }
+
+        return tag;
+    }
+
+    std::array<int, 64> Segmentation::getARTagCode(const cv::Mat& tag_img)
+    {
+        // 8 is fixed because aruco tags work with 8x8 square
+        unsigned int width = tag_img.cols / 8;
+        std::array<int, 64> code{};
+
+        for(unsigned int i = 0; i < 8; i++)
+        {
+            for(unsigned int j = 0; j < 8; j++)
+            {
+                auto rect = cv::Rect(j * width, i * width, width, width);
+                cv::Scalar mean = cv::mean(tag_img(rect));
+                code[j + i * 8] = (mean[0] < 128) ? 0 : 1;
+            }
+        }
+
+        return code;
     }
 }

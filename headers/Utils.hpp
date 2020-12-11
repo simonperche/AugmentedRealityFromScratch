@@ -27,6 +27,8 @@ namespace arfs
 
         static void showImage(const cv::Mat& img, const std::string& winname);
 
+        static cv::Mat loadImage(const std::string& filename);
+
         static constexpr double PI = 3.141592653589793238463;
     };
 }

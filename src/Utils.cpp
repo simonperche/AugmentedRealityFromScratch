@@ -33,4 +33,9 @@ namespace arfs
     {
         cv::imshow(winname, img);
     }
+
+    cv::Mat Utils::loadImage(const std::string& filename)
+    {
+        return cv::imread(filename);
+    }
 }
