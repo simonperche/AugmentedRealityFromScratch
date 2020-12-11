@@ -10,14 +10,18 @@
 namespace arfs
 {
 
-    double Utils::angleBetween(const cv::Point& p1, const cv::Point& p2)
+    double Utils::angleBetween(const cv::Point& p1, const cv::Point& p2, AngleType type)
     {
-        double angle = atan2(p1.y - p2.y, p1.x - p2.x);
-
-        if(angle < 0)
-            angle += 2 * Utils::PI;
+        double angle = acos(p1.dot(p2) / (cv::norm(p1) * cv::norm(p2)));
+        if(type == AngleType::DEG)
+            angle = angle * 180 / CV_PI;
 
         return angle;
+    }
+
+    double Utils::norm(const cv::Point& p1, const cv::Point& p2)
+    {
+        return cv::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
     }
 
     void Utils::saveImage(const cv::Mat& img, const std::string& filename)

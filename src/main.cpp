@@ -24,7 +24,7 @@ int main()
 
         if(frame.empty() || arfs::Video::escIsPressed())
             break;
-        
+
         arfs::Utils::showImage(frame, "original");
         arfs::Utils::showImage(arfs::Segmentation::extractTag(frame), "threshold");
     }
