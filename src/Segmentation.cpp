@@ -124,8 +124,7 @@ namespace arfs
                     {
                         group.push_back(p2);
                         found = true;
-                    }
-                    else if(std::find(group.begin(), group.end(), p2) != group.end())
+                    } else if(std::find(group.begin(), group.end(), p2) != group.end())
                     {
                         group.push_back(p1);
                         found = true;
@@ -205,7 +204,7 @@ namespace arfs
             bool found = false;
 
             //Try all rotations, homography is sensible to order of points
-            for(int rotation = 0 ; rotation < 4 ; rotation++)
+            for(int rotation = 0; rotation < 4; rotation++)
             {
                 std::rotate(points.begin(), points.begin() + 1, points.end());
                 cv::Mat homography = cv::findHomography(points, std::vector<cv::Point>{cv::Point(0, 0),
@@ -217,7 +216,7 @@ namespace arfs
 
                 cv::cvtColor(candidate, candidate, cv::COLOR_BGR2GRAY);
 
-                cv::threshold(candidate, candidate, 0, 255, cv::THRESH_BINARY+cv::THRESH_OTSU);
+                cv::threshold(candidate, candidate, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
 
 
                 if(getARTagCode(candidate) == code)
@@ -225,6 +224,8 @@ namespace arfs
                     found = true;
                     cv::imshow("candidate", candidate);
                     tag = points;
+                    auto f = frame.clone();
+                    showAxis(homography, tag, f);
                     break;
                 }
             }
@@ -252,5 +253,75 @@ namespace arfs
         }
 
         return code;
+    }
+
+    void Segmentation::showAxis(const cv::Mat& homography, const std::vector<cv::Point>& tag, cv::Mat& frame)
+    {
+        auto intrinsic = cv::Matx33d(28, 0, frame.cols / 2.,
+                             0, 28, frame.rows / 2.,
+                             0, 0, 1);
+
+        auto obj_points = std::vector<cv::Point3d>{cv::Point3d(150, 150, 0),
+                                                   cv::Point3d(150, 250, 0),
+                                                   cv::Point3d(250, 150, 0),
+                                                   cv::Point3d(150, 150, 100)};
+
+        auto scene_points = projectPoint(obj_points, getProjectionMatrix(homography, intrinsic));
+        std::cout << "NEW" << std::endl;
+        std::cout << scene_points << std::endl;
+        std::cout << tag << std::endl;
+
+        cv::line(frame, scene_points[0], scene_points[1], cv::Scalar(0, 0, 255), 3);
+        cv::line(frame, scene_points[0], scene_points[2], cv::Scalar(0, 255, 0), 3);
+        cv::line(frame, scene_points[0], scene_points[3], cv::Scalar(255, 0, 0), 3);
+        cv::imshow("axis", frame);
+    }
+
+    std::vector<cv::Point2d> Segmentation::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)
+    {
+        std::vector<cv::Point2d> scene_points(points.size());
+        for(int i = 0; i < points.size(); i++)
+        {
+            cv::Mat_<double> src(4, 1);
+
+            src(0, 0) = points[i].x;
+            src(1, 0) = points[i].y;
+            src(2, 0) = points[i].z;
+            src(3, 0) = 1;
+            cv::Mat tmp = projectionMatrix * src;
+            tmp /= tmp.at<double>(2, 0);
+            scene_points[i].x = tmp.at<double>(0, 0);
+            scene_points[i].y = tmp.at<double>(1, 0);
+
+        }
+
+        return scene_points;
+    }
+
+    cv::Mat Segmentation::getProjectionMatrix(const cv::Mat& homography, const cv::Matx33d& intrinsicMatrix)
+    {
+        cv::Mat homography_inv = homography.inv();
+
+        auto R_and_T = intrinsicMatrix.inv() * homography_inv;
+        auto r1 = R_and_T.col(0);
+        auto r2 = R_and_T.col(1);
+        auto T = R_and_T.col(2);
+        auto norm = sqrt(cv::norm(r1) * cv::norm(r2));
+
+        r1 /= norm;
+        r2 /= norm;
+        T /= norm;
+        auto c = r1 + r2;
+        auto p = r1.cross(r2);
+        auto d = c.cross(p);
+        r1 = (c / cv::norm(c) + d / cv::norm(d)) * (1 / sqrt(2));
+        r2 = (c / cv::norm(c) - d / cv::norm(d)) * (1 / sqrt(2));
+        auto r3 = r1.cross(r2);
+
+        cv::Mat R_T;
+        cv::Mat array[] = {r1, r2, r3, T};
+        cv::hconcat(array, 4, R_T);
+
+        return intrinsicMatrix * R_T;
     }
 }

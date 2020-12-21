@@ -19,8 +19,8 @@
 int main()
 {
 //    auto video = arfs::Video(0, 1,1);
-    auto video = arfs::Video("../video/aruco.mp4", 0.5, 0.5);
-    auto tag = arfs::Utils::loadImage("../video/marker23.png");
+    auto video = arfs::Video("../video/marker.mp4", 0.5, 0.5);
+    auto tag = arfs::Utils::loadImage("../video/marker.jpeg");
 
     for(;;)
     {
