@@ -6,6 +6,7 @@
 #define AR_SEGMENTATION_HPP
 
 #include <opencv2/core/mat.hpp>
+#include "../headers/OBJLoader.h"
 
 namespace arfs
 {
@@ -18,6 +19,7 @@ namespace arfs
         static std::array<int, 64> getARTagCode(const cv::Mat& tag_img);
         static cv::Mat getProjectionMatrix(const cv::Mat& homography, const cv::Matx33d& intrinsicMatrix);
         static std::vector<cv::Point2d> projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix);
+        static void augmentObject(const OBJLoader& obj, const cv::Mat& frame, const std::vector<cv::Point>& tag);
     private:
         static cv::Mat threshold(const cv::Mat& img);
         static void showAxis(const cv::Mat& homography, const std::vector<cv::Point>& tag, cv::Mat& frame);

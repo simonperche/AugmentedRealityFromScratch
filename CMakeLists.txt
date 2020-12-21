@@ -108,7 +108,8 @@ set(SOURCE_FILES
         src/Video.cpp
         src/Tracking.cpp
         src/Utils.cpp
-        src/Segmentation.cpp)
+        src/Segmentation.cpp
+        src/OBJLoader.cpp)
 
 set(HEADERS_FILES
         headers/View.inl
@@ -116,7 +117,8 @@ set(HEADERS_FILES
         headers/Video.hpp
         headers/Tracking.hpp
         headers/Utils.hpp
-        headers/Segmentation.hpp)
+        headers/Segmentation.hpp
+        headers/OBJLoader.h)
 
 if(${BUILD_WITH_OPENGL})
     find_package(OpenGL REQUIRED)

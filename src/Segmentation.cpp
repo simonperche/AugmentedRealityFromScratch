@@ -12,6 +12,7 @@
 #include <algorithm>
 #include "../headers/Segmentation.hpp"
 #include "../headers/Utils.hpp"
+#include "../headers/OBJLoader.h"
 
 namespace arfs
 {
@@ -47,7 +48,7 @@ namespace arfs
         colors[2] = cv::Scalar(0, 0, 255);
         for(size_t idx = 0; idx < contours.size(); idx++)
         {
-            cv::drawContours(contourImage, contours, idx, colors[idx % 3]);
+            cv::drawContours(contourImage, contours, int(idx), colors[idx % 3]);
         }
 
         cv::imshow("Input Image", image);
@@ -258,18 +259,19 @@ namespace arfs
     void Segmentation::showAxis(const cv::Mat& homography, const std::vector<cv::Point>& tag, cv::Mat& frame)
     {
         auto intrinsic = cv::Matx33d(28, 0, frame.cols / 2.,
-                             0, 28, frame.rows / 2.,
-                             0, 0, 1);
+                                     0, 28, frame.rows / 2.,
+                                     0, 0, 1);
+        auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
 
         auto obj_points = std::vector<cv::Point3d>{cv::Point3d(150, 150, 0),
                                                    cv::Point3d(150, 250, 0),
                                                    cv::Point3d(250, 150, 0),
-                                                   cv::Point3d(150, 150, 100)};
+                                                   cv::Point3d(150, 150, 10)};
 
-        auto scene_points = projectPoint(obj_points, getProjectionMatrix(homography, intrinsic));
-        std::cout << "NEW" << std::endl;
-        std::cout << scene_points << std::endl;
-        std::cout << tag << std::endl;
+        auto scene_points = projectPoint(obj_points, projectionMatrix);
+//        std::cout << "NEW" << std::endl;
+//        std::cout << scene_points << std::endl;
+//        std::cout << tag << std::endl;
 
         cv::line(frame, scene_points[0], scene_points[1], cv::Scalar(0, 0, 255), 3);
         cv::line(frame, scene_points[0], scene_points[2], cv::Scalar(0, 255, 0), 3);
@@ -323,5 +325,36 @@ namespace arfs
         cv::hconcat(array, 4, R_T);
 
         return intrinsicMatrix * R_T;
+    }
+
+    void Segmentation::augmentObject(const OBJLoader& obj, const cv::Mat& frame, const std::vector<cv::Point>& tag)
+    {
+        cv::Mat homography = cv::findHomography(tag, std::vector<cv::Point>{cv::Point(0, 0),
+                                                                               cv::Point(300, 0),
+                                                                               cv::Point(300,300),
+                                                                               cv::Point(0, 300)});
+
+        auto intrinsic = cv::Matx33d(28, 0, frame.cols / 2.,
+                                     0, 28, frame.rows / 2.,
+                                     0, 0, 1);
+        auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
+
+        auto faces = obj.getFaces();
+        for(auto& face : faces)
+        {
+            auto scene_points = projectPoint(face, projectionMatrix);
+            for(auto& point : face)
+            {
+                //Scale and center
+                point.x += frame.cols/2.;
+                point.y += frame.rows/2.;
+
+                point *= 100;
+            }
+            cv::fillConvexPoly(frame, scene_points, cv::Scalar(150));
+            std::cout << "FACE" << std::endl;
+            std::cout << face << std::endl;
+            std::cout << scene_points << std::endl;
+        }
     }
 }
