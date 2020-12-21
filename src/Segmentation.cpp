@@ -163,24 +163,7 @@ namespace arfs
                 continue;
 
             candidates.push_back(points);
-//            for(const auto& p : points)
-//            {
-//                cv::circle(hull_mask, p, 5, cv::Scalar(128), cv::FILLED);
-//                for(size_t i = 0 ; i < points.size()-1;i++)
-//                    cv::line( frame_copy, points[i], points[i+1], cv::Scalar(0,255,0), 1, cv::LINE_AA);
-//                cv::line( frame_copy, points[3], points[0], cv::Scalar(0,255,0), 1, cv::LINE_AA);
-//                cv::circle(frame_copy, p, 2, cv::Scalar(0,0,255), cv::FILLED);
-//            }
-
-//            cv::imshow("hull", hull_mask);
-//            cv::Mat warpedSquare(300, 300, CV_8UC3);
-//            cv::Mat homography = cv::findHomography(points, std::vector<cv::Point>{cv::Point(0,0) , cv::Point(warpedSquare.cols, 0), cv::Point(warpedSquare.cols, warpedSquare.rows), cv::Point(0, warpedSquare.rows) });
-//            warpPerspective(frame, warpedSquare, homography, cv::Size(warpedSquare.cols, warpedSquare.rows));
-//            cv::imshow("Square", warpedSquare);
-////            cv::waitKey();
         }
-//        cv::imshow("Contours", drawing);
-//        cv::imshow("Tag", frame_copy);
 
         return candidates;
     }
@@ -201,18 +184,16 @@ namespace arfs
         std::vector<cv::Point> tag{};
         for(auto points : candidates)
         {
-            cv::Mat candidate(300, 300, CV_8UC3);
+            cv::Mat candidate(m_tagSize, m_tagSize, CV_8UC3);
             bool found = false;
 
             //Try all rotations, homography is sensible to order of points
             for(int rotation = 0; rotation < 4; rotation++)
             {
                 std::rotate(points.begin(), points.begin() + 1, points.end());
-                cv::Mat homography = cv::findHomography(points, std::vector<cv::Point>{cv::Point(0, 0),
-                                                                                       cv::Point(candidate.cols, 0),
-                                                                                       cv::Point(candidate.cols,
-                                                                                                 candidate.rows),
-                                                                                       cv::Point(0, candidate.rows)});
+                cv::Mat homography = computeHomography(points);
+                if(homography.empty()) continue;
+
                 cv::warpPerspective(frame, candidate, homography, cv::Size(candidate.cols, candidate.rows));
 
                 cv::cvtColor(candidate, candidate, cv::COLOR_BGR2GRAY);
@@ -258,15 +239,15 @@ namespace arfs
 
     void Segmentation::showAxis(const cv::Mat& homography, const std::vector<cv::Point>& tag, cv::Mat& frame)
     {
-        auto intrinsic = cv::Matx33d(28, 0, frame.cols / 2.,
-                                     0, 28, frame.rows / 2.,
+        auto intrinsic = cv::Matx33d(3.6, 0, frame.cols / 2.,
+                                     0, 3.6, frame.rows / 2.,
                                      0, 0, 1);
         auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
 
-        auto obj_points = std::vector<cv::Point3d>{cv::Point3d(150, 150, 0),
-                                                   cv::Point3d(150, 250, 0),
-                                                   cv::Point3d(250, 150, 0),
-                                                   cv::Point3d(150, 150, 10)};
+        auto obj_points = std::vector<cv::Point3d>{cv::Point3d(m_tagSize/2, m_tagSize/2, 0),
+                                                   cv::Point3d(m_tagSize/2, (m_tagSize/2)+100, 0),
+                                                   cv::Point3d((m_tagSize/2)+100, m_tagSize/2, 0),
+                                                   cv::Point3d(m_tagSize/2, m_tagSize/2, 10)};
 
         auto scene_points = projectPoint(obj_points, projectionMatrix);
 //        std::cout << std::endl << "AXIS" << std::endl;
@@ -330,37 +311,31 @@ namespace arfs
 
     void Segmentation::augmentObject(const OBJLoader& obj, const cv::Mat& frame, const std::vector<cv::Point>& tag)
     {
-        cv::Mat homography = cv::findHomography(tag, std::vector<cv::Point>{cv::Point(0, 0),
-                                                                               cv::Point(300, 0),
-                                                                               cv::Point(300,300),
-                                                                               cv::Point(0, 300)});
+        cv::Mat homography = computeHomography(tag);
 
-        auto intrinsic = cv::Matx33d(28, 0, frame.cols / 2.,
-                                     0, 28, frame.rows / 2.,
+        if(homography.empty()) return;
+
+        auto intrinsic = cv::Matx33d(3.6, 0, frame.cols / 2.,
+                                     0, 3.6, frame.rows / 2.,
                                      0, 0, 1);
         auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
 
         auto faces = obj.getFaces();
         for(auto& face : faces)
         {
-            //Scale
+
             for(auto& point : face)
             {
+                //Scale
                 point.x *= 5;
                 point.y *= 5;
-                point.z *= 0.2;
+                point.z *= 0.05;
 
-                point.x += 150;
-                point.y += 150;
+                //Center
+                point.x += int(m_tagSize/2);
+                point.y += int(m_tagSize/2);
             }
             auto scene_points = projectPoint(face, projectionMatrix);
-
-            //Center
-//            for(auto& point : scene_points)
-//            {
-//                point.x += int(frame.cols/2);
-//                point.y += int(frame.rows/2);
-//            }
 
             cv::fillConvexPoly(frame, scene_points, cv::Scalar(150,150,150));
 //            std::cout << "FACE" << std::endl;
@@ -370,5 +345,49 @@ namespace arfs
 
             cv::imshow("object", frame);
         }
+    }
+
+    cv::Mat Segmentation::computeHomography(const std::vector<cv::Point>& srcPoints)
+    {
+        if(srcPoints.size() != 4) return cv::Mat();
+
+        const int factor = 6;
+        auto dstPoints = std::vector<cv::Point>{cv::Point(0, 0),
+                                                cv::Point(m_tagSize, 0),
+                                                cv::Point(m_tagSize, m_tagSize),
+                                                cv::Point(0, m_tagSize)};
+
+        // -- This was a test trying to augment the number of point to compute a better homography
+//        std::vector<cv::Point2d> srcPointsAugmented{};
+//        std::vector<cv::Point> dstPointsAugmented{};
+//
+//        auto getPourcentageOfSegment = [](const cv::Point& p1, const cv::Point& p2, double i, double factor)
+//        {
+//            return static_cast<cv::Point2d>(p1) + (i/factor)*(static_cast<cv::Point2d>(p2) - static_cast<cv::Point2d>(p1));
+//        };
+//
+//        //Divide polygon in a grid to augment the number of points
+//        for(int i = 0 ; i <= factor ; i++)
+//        {
+//            cv::Point2d p1_src = getPourcentageOfSegment(srcPoints[0], srcPoints[1], i, factor);
+//            cv::Point2d p2_src = getPourcentageOfSegment(srcPoints[3], srcPoints[2], i, factor);
+//
+//            cv::Point2d p1_dst = getPourcentageOfSegment(dstPoints[0], dstPoints[1], i, factor);
+//            cv::Point2d p2_dst = getPourcentageOfSegment(dstPoints[3], dstPoints[2], i, factor);
+//            for(int j = 0 ; j <= factor ; j++)
+//            {
+//                cv::Point2d p_src = getPourcentageOfSegment(p1_src, p2_src, j, factor);
+//                srcPointsAugmented.emplace_back(p_src);
+//
+//                cv::Point2d p_dst = getPourcentageOfSegment(p1_dst, p2_dst, j, factor);
+//                dstPointsAugmented.emplace_back(p_dst);
+//            }
+//        }
+//
+//        cv::Mat homography = cv::findHomography(srcPointsAugmented, dstPointsAugmented);
+
+        cv::Mat homography = cv::findHomography(srcPoints, dstPoints);
+
+        return homography;
     }
 }

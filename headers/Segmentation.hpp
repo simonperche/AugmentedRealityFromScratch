@@ -23,6 +23,11 @@ namespace arfs
     private:
         static cv::Mat threshold(const cv::Mat& img);
         static void showAxis(const cv::Mat& homography, const std::vector<cv::Point>& tag, cv::Mat& frame);
+
+        //Generate points inside polygon to increase accuracy
+        static cv::Mat computeHomography(const std::vector<cv::Point>& srcPoints);
+
+        static const int m_tagSize = 300;
     };
 }
 
