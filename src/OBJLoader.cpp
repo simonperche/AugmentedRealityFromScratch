@@ -56,6 +56,7 @@ namespace arfs
                         faces_split.emplace_back(token);
                         it->erase(0, pos + 1);
                     }
+                    faces_split.emplace_back(*it);
 
                     if(faces_split.size() != 3) continue;
 
@@ -71,6 +72,27 @@ namespace arfs
                     }
                 }
                 m_faces.emplace_back(face);
+            }
+        }
+    }
+
+    void OBJLoader::rotate(double xAngle, double yAngle, double zAngle)
+    {
+        auto rot_x = cv::Matx33d(1, 0, 0,
+                                 0, std::cos(xAngle), -std::sin(xAngle),
+                                 0, std::sin(xAngle), std::cos(xAngle));
+        auto rot_y = cv::Matx33d(std::cos(yAngle), 0, std::sin(yAngle),
+                                 0, 1, 0,
+                                 -std::sin(yAngle), 0, std::cos(yAngle));
+        auto rot_z = cv::Matx33d(std::cos(zAngle), -std::sin(zAngle), 0,
+                                 std::sin(zAngle), std::cos(zAngle), 0,
+                                 0, 0, 1);
+        auto rot = rot_x * rot_y * rot_z;
+        for(auto& face : m_faces)
+        {
+            for(auto& point : face)
+            {
+                point = rot * point;
             }
         }
     }

@@ -80,12 +80,12 @@ namespace arfs
 //            cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
 //            cv::drawContours(drawing, contours, (int) i, color, 2, cv::LINE_8, hierarchy, 0);
 
-            auto hull_mask = cv::Mat(frame.size(), CV_8UC1, cv::Scalar(0));
+//            auto hull_mask = cv::Mat(frame.size(), CV_8UC1, cv::Scalar(0));
 
             //std::vector<std::vector> is needed to use draw contours
             auto hull = std::vector<std::vector<cv::Point>>(1);
             cv::convexHull(contours[i], hull[0]);
-            cv::drawContours(hull_mask, hull, 0, cv::Scalar(255), 1, cv::LINE_8);
+//            cv::drawContours(hull_mask, hull, 0, cv::Scalar(255), 1, cv::LINE_8);
 //            cv::fillPoly(hull_mask, hull, cv::Scalar(255));
 
             const double& angleThreshold = 5;
@@ -269,7 +269,8 @@ namespace arfs
                                                    cv::Point3d(150, 150, 10)};
 
         auto scene_points = projectPoint(obj_points, projectionMatrix);
-//        std::cout << "NEW" << std::endl;
+//        std::cout << std::endl << "AXIS" << std::endl;
+//        std::cout << homography << std::endl;
 //        std::cout << scene_points << std::endl;
 //        std::cout << tag << std::endl;
 
@@ -279,9 +280,9 @@ namespace arfs
         cv::imshow("axis", frame);
     }
 
-    std::vector<cv::Point2d> Segmentation::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)
+    std::vector<cv::Point2i> Segmentation::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)
     {
-        std::vector<cv::Point2d> scene_points(points.size());
+        std::vector<cv::Point2i> scene_points(points.size());
         for(int i = 0; i < points.size(); i++)
         {
             cv::Mat_<double> src(4, 1);
@@ -292,8 +293,8 @@ namespace arfs
             src(3, 0) = 1;
             cv::Mat tmp = projectionMatrix * src;
             tmp /= tmp.at<double>(2, 0);
-            scene_points[i].x = tmp.at<double>(0, 0);
-            scene_points[i].y = tmp.at<double>(1, 0);
+            scene_points[i].x = int(tmp.at<double>(0, 0));
+            scene_points[i].y = int(tmp.at<double>(1, 0));
 
         }
 
@@ -342,19 +343,32 @@ namespace arfs
         auto faces = obj.getFaces();
         for(auto& face : faces)
         {
-            auto scene_points = projectPoint(face, projectionMatrix);
+            //Scale
             for(auto& point : face)
             {
-                //Scale and center
-                point.x += frame.cols/2.;
-                point.y += frame.rows/2.;
+                point.x *= 5;
+                point.y *= 5;
+                point.z *= 0.2;
 
-                point *= 100;
+                point.x += 150;
+                point.y += 150;
             }
-            cv::fillConvexPoly(frame, scene_points, cv::Scalar(150));
-            std::cout << "FACE" << std::endl;
-            std::cout << face << std::endl;
-            std::cout << scene_points << std::endl;
+            auto scene_points = projectPoint(face, projectionMatrix);
+
+            //Center
+//            for(auto& point : scene_points)
+//            {
+//                point.x += int(frame.cols/2);
+//                point.y += int(frame.rows/2);
+//            }
+
+            cv::fillConvexPoly(frame, scene_points, cv::Scalar(150,150,150));
+//            std::cout << "FACE" << std::endl;
+//            std::cout << homography << std::endl;
+//            std::cout << face << std::endl;
+//            std::cout << scene_points << std::endl;
+
+            cv::imshow("object", frame);
         }
     }
 }

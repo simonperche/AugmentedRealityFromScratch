@@ -18,6 +18,8 @@ namespace arfs
         std::vector<std::vector<cv::Point3d>> getFaces() const
         { return m_faces; }
 
+        void rotate(double xAngle, double yAngle, double zAngle);
+
     private:
         std::vector<std::vector<cv::Point3d>> m_faces;
     };

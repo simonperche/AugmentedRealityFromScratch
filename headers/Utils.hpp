@@ -18,7 +18,10 @@ namespace arfs
     class Utils
     {
     public:
-        static double angleBetween(const cv::Point& v1, const cv::Point& v2, AngleType type=AngleType::RAD);
+        static double angleBetween(const cv::Point& v1, const cv::Point& v2, AngleType type = AngleType::RAD);
+
+        static double degToRad(double deg)
+        { return deg * (Utils::PI / 180); }
 
         // cv::norm is not implemented with two points
         static double norm(const cv::Point& p1, const cv::Point& p2);
