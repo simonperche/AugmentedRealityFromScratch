@@ -47,4 +47,20 @@ namespace arfs
     {
         return cv::imread(filename);
     }
+
+    std::vector<std::string> Utils::split(std::string s, const char& delimiter)
+    {
+        std::vector<std::string> split_strings{};
+        size_t pos;
+        std::string token{};
+        while((pos = s.find('/')) != std::string::npos)
+        {
+            token = s.substr(0, pos);
+            split_strings.emplace_back(token);
+            s.erase(0, pos + 1);
+        }
+        split_strings.emplace_back(s);
+
+        return split_strings;
+    }
 }

@@ -33,6 +33,8 @@ namespace arfs
 
         static cv::Mat loadImage(const std::string& filename);
 
+        static std::vector<std::string> split(std::string s, const char& delimiter);
+
         static constexpr double PI = 3.141592653589793238463;
     };
 }

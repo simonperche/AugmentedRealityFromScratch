@@ -2,19 +2,23 @@
 // Created by Simon on 06/11/2020.
 //
 
-#include "../headers/Tracking.hpp"
 #include "../headers/Video.hpp"
+#include "../headers/Scene.hpp"
+#include "../headers/Renderer.hpp"
+#include "../headers/TagDetection.hpp"
+#include "../headers/ARTag.hpp"
 #include "../headers/Utils.hpp"
-#include "../headers/Segmentation.hpp"
-#include "../headers/OBJLoader.h"
 
 int main()
 {
     auto video = arfs::Video(0, 1,1);
 //    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
-    auto tag = arfs::Utils::loadImage("../resources/marker.jpeg");
-    auto obj = arfs::OBJLoader("../resources/low_poly_fox.obj");
-    obj.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
+
+    auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
+    auto scene = arfs::Scene();
+    scene.addObject("../resources/low_poly_fox.obj");
+    scene.getCamera().calibrateAndSave("../resources/webcam.cam");
+    scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
 
     for(;;)
     {
@@ -23,19 +27,20 @@ int main()
         if(frame.empty() || arfs::Video::escIsPressed())
             break;
 
-        auto frameTag = arfs::Segmentation::recognizeTag(frame, arfs::Segmentation::extractTagCandidates(frame),
-                                                    arfs::Segmentation::getARTagCode(tag));
+        auto renderFrame = frame.clone();
 
-        if(!frameTag.empty())
+        auto tagDetected = tagDetection.update(frame);
+
+        if(!tagDetected.empty())
         {
-            arfs::Segmentation::augmentObject(obj, frame.clone(), frameTag);
+            scene.getCamera().updateProjectionMatrix(tagDetected);
+            arfs::Renderer::render(renderFrame, scene);
 
-            for(size_t i = 0 ; i < frameTag.size()-1;i++)
-                cv::line( frame, frameTag[i], frameTag[i+1], cv::Scalar(0,255,0), 2, cv::LINE_AA);
-            cv::line( frame, frameTag[3], frameTag[0], cv::Scalar(0,255,0), 2, cv::LINE_AA);
+            arfs::Renderer::drawPolygon(frame, tagDetected);
         }
 
         arfs::Utils::showImage(frame, "original");
+        arfs::Utils::showImage(renderFrame, "render");
     }
 
     return 0;

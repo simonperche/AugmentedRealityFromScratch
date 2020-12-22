@@ -105,15 +105,25 @@ set(SOURCE_FILES
         src/Video.cpp
         src/Tracking.cpp
         src/Utils.cpp
-        src/Segmentation.cpp
-        src/OBJLoader.cpp)
+        src/OBJLoader.cpp
+        src/ARTag.cpp
+        src/TagDetection.cpp
+        src/Camera.cpp
+        src/Object.cpp
+        src/Scene.cpp
+        src/Renderer.cpp)
 
 set(HEADERS_FILES
         headers/Video.hpp
         headers/Tracking.hpp
         headers/Utils.hpp
-        headers/Segmentation.hpp
-        headers/OBJLoader.h)
+        headers/OBJLoader.hpp
+        headers/ARTag.hpp
+        headers/TagDetection.hpp
+        headers/Camera.hpp
+        headers/Object.hpp
+        headers/Scene.hpp
+        headers/Renderer.hpp)
 
 add_executable(${APP_NAME} ${SOURCE_FILES} ${HEADERS_FILES})
 
