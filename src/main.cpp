@@ -5,17 +5,13 @@
 #include "../headers/Tracking.hpp"
 #include "../headers/Video.hpp"
 #include "../headers/View.inl"
-
-#ifdef WITH_IRRLICHT
-#include "../headers/IrrlichtRenderer.hpp"
-#endif
-#ifdef WITH_OPENGL
-#include "../headers/OpenGLRenderer.hpp"
-#endif
-
 #include "../headers/Utils.hpp"
 #include "../headers/Segmentation.hpp"
 #include "../headers/OBJLoader.h"
+
+#ifdef WITH_OPENGL
+#include "../headers/OpenGLRenderer.hpp"
+#endif
 
 int main()
 {

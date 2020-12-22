@@ -6,7 +6,6 @@ set(APP_NAME AR)
 
 project(${APP_NAME})
 
-option(BUILD_WITH_IRRLICHT "Build with Irrlicht 3D engine" OFF)
 option(BUILD_WITH_OPENGL "Build with OpenGL library" OFF)
 
 if (CMAKE_COMPILER_IS_GNUCC)
@@ -135,30 +134,12 @@ if(${BUILD_WITH_OPENGL})
     add_compile_definitions(WITH_OPENGL)
 endif()
 
-if(${BUILD_WITH_IRRLICHT})
-    find_package(Irrlicht REQUIRED)
-    include_directories(${IRRLICHT_INCLUDE_DIRS})
-
-    set(SOURCE_FILES
-            ${SOURCE_FILES}
-            src/IrrlichtRenderer.cpp)
-
-    set(HEADERS_FILES
-            ${HEADERS_FILES}
-            headers/IrrlichtRenderer.hpp)
-
-    add_compile_definitions(WITH_IRRLICHT)
-endif()
-
 add_executable(${APP_NAME} ${SOURCE_FILES} ${HEADERS_FILES})
 
 target_link_libraries(${APP_NAME} ${OpenCV_LIBS})
 
 if(${BUILD_WITH_OPENGL})
     target_link_libraries(${APP_NAME} ${OPENGL_LIBRARIES})
-endif()
-if(${BUILD_WITH_IRRLICHT})
-    target_link_libraries(${APP_NAME} ${IRRLICHT_LIBRARIES})
 endif()
 
 target_compile_options(${APP_NAME} PUBLIC ${COMPILATION_FLAGS})
