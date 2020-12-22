@@ -23,7 +23,7 @@ int main()
 //    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
     auto tag = arfs::Utils::loadImage("../resources/marker.jpeg");
     auto obj = arfs::OBJLoader("../resources/low_poly_fox.obj");
-    obj.rotate(arfs::Utils::degToRad(90),0,0);
+    obj.rotate(arfs::Utils::degToRad(-90),0,arfs::Utils::degToRad(180));
 
     for(;;)
     {

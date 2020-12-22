@@ -19,6 +19,15 @@ namespace arfs
         return angle;
     }
 
+    double Utils::angleBetween(const cv::Vec3d& v1, const cv::Vec3d& v2, AngleType type)
+    {
+        double angle = acos(v1.dot(v2) / (cv::norm(v1) * cv::norm(v2)));
+        if(type == AngleType::DEG)
+            angle = angle * 180 / CV_PI;
+
+        return angle;
+    }
+
     double Utils::norm(const cv::Point& p1, const cv::Point& p2)
     {
         return cv::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));

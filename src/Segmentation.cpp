@@ -323,8 +323,7 @@ namespace arfs
         auto faces = obj.getFaces();
         for(auto& face : faces)
         {
-
-            for(auto& point : face)
+            for(auto& point : face.points)
             {
                 //Scale
                 point.x *= 5;
@@ -335,9 +334,12 @@ namespace arfs
                 point.x += int(m_tagSize/2);
                 point.y += int(m_tagSize/2);
             }
-            auto scene_points = projectPoint(face, projectionMatrix);
+            auto scene_points = projectPoint(face.points, projectionMatrix);
 
-            cv::fillConvexPoly(frame, scene_points, cv::Scalar(150,150,150));
+            auto light = cv::Vec3d(-1,1,-1);
+            auto angle = arfs::Utils::angleBetween(face.normal, light, arfs::AngleType::DEG);
+            auto lightValue = (angle*255)/180;
+            cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue,lightValue,lightValue));
 //            std::cout << "FACE" << std::endl;
 //            std::cout << homography << std::endl;
 //            std::cout << face << std::endl;

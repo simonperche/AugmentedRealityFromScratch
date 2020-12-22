@@ -10,18 +10,24 @@
 
 namespace arfs
 {
+    struct Face
+    {
+        std::vector<cv::Point3d> points;
+        cv::Vec3d normal;
+    };
+
     class OBJLoader
     {
     public:
         OBJLoader(const std::string& filename);
 
-        std::vector<std::vector<cv::Point3d>> getFaces() const
+        std::vector<Face> getFaces() const
         { return m_faces; }
 
         void rotate(double xAngle, double yAngle, double zAngle);
 
     private:
-        std::vector<std::vector<cv::Point3d>> m_faces;
+        std::vector<Face> m_faces;
     };
 }
 
