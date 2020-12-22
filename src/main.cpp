@@ -4,14 +4,9 @@
 
 #include "../headers/Tracking.hpp"
 #include "../headers/Video.hpp"
-#include "../headers/View.inl"
 #include "../headers/Utils.hpp"
 #include "../headers/Segmentation.hpp"
 #include "../headers/OBJLoader.h"
-
-#ifdef WITH_OPENGL
-#include "../headers/OpenGLRenderer.hpp"
-#endif
 
 int main()
 {
