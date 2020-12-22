@@ -6,6 +6,8 @@ set(APP_NAME AR)
 
 project(${APP_NAME})
 
+option(BUILD_WITH_OPENGL "Build with OpenGL library" OFF)
+
 if (CMAKE_COMPILER_IS_GNUCC)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(COMPILATION_FLAGS
@@ -97,27 +99,47 @@ elseif (MSVC)
     endif()
 endif ()
 
-
 find_package(OpenCV 4 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-find_package(Irrlicht)
-include_directories(${IRRLICHT_INCLUDE_DIRS})
-
 set(SOURCE_FILES
         src/main.cpp
-        src/IrrlichtRenderer.cpp
-        src/IrrlichtRenderer.cpp
         src/Video.cpp
-        src/Tracking.cpp src/Utils.cpp)
+        src/Tracking.cpp
+        src/Utils.cpp
+        src/Segmentation.cpp
+        src/OBJLoader.cpp)
 
 set(HEADERS_FILES
         headers/View.inl
         headers/Renderer.hpp
-        headers/IrrlichtRenderer.hpp
         headers/Video.hpp
-        headers/Tracking.hpp headers/Utils.hpp)
+        headers/Tracking.hpp
+        headers/Utils.hpp
+        headers/Segmentation.hpp
+        headers/OBJLoader.h)
+
+if(${BUILD_WITH_OPENGL})
+    find_package(OpenGL REQUIRED)
+    include_directories(${OPENGL_INCLUDE_DIRS})
+
+    set(SOURCE_FILES
+            ${SOURCE_FILES}
+            src/OpenGLRenderer.cpp)
+
+    set(HEADERS_FILES
+            ${HEADERS_FILES}
+            headers/OpenGLRenderer.hpp)
+
+    add_compile_definitions(WITH_OPENGL)
+endif()
 
 add_executable(${APP_NAME} ${SOURCE_FILES} ${HEADERS_FILES})
-target_link_libraries(${APP_NAME} ${OpenCV_LIBS} ${IRRLICHT_LIBRARIES})
+
+target_link_libraries(${APP_NAME} ${OpenCV_LIBS})
+
+if(${BUILD_WITH_OPENGL})
+    target_link_libraries(${APP_NAME} ${OPENGL_LIBRARIES})
+endif()
+
 target_compile_options(${APP_NAME} PUBLIC ${COMPILATION_FLAGS})

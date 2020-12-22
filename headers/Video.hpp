@@ -13,17 +13,17 @@ namespace arfs
     {
     public:
         Video(){};
-        explicit Video(const std::string& name);
-        explicit Video(int camId);
+        explicit Video(const std::string& name, double xResize = 1, double yResize = 1);
+        explicit Video(int camId, double xResize = 1, double yResize = 1);
         static bool escIsPressed();
-        void showFrame(const std::string& winname);
+        void restartFromBeginning();
         cv::Mat getNextFrame();
-        cv::Mat getCurrentFrame()
-        { return m_currentFrame; };
+        cv::Mat getCurrentFrame();
 
     private:
         cv::VideoCapture m_video{};
         cv::Mat m_currentFrame{};
+        cv::Vec2d m_resizeValues{};
     };
 }
 

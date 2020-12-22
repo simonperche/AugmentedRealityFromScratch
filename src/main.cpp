@@ -5,32 +5,42 @@
 #include "../headers/Tracking.hpp"
 #include "../headers/Video.hpp"
 #include "../headers/View.inl"
-#include "../headers/IrrlichtRenderer.hpp"
 #include "../headers/Utils.hpp"
+#include "../headers/Segmentation.hpp"
+#include "../headers/OBJLoader.h"
+
+#ifdef WITH_OPENGL
+#include "../headers/OpenGLRenderer.hpp"
+#endif
 
 int main()
 {
-    auto video = arfs::Video("../video/translation.mp4");
-    auto trackers = arfs::Tracking(video.getCurrentFrame());
-    auto view = arfs::View<arfs::IrrlichtRenderer>(video.getCurrentFrame().cols, video.getCurrentFrame().rows);
+    auto video = arfs::Video(0, 1,1);
+//    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
+    auto tag = arfs::Utils::loadImage("../resources/marker.jpeg");
+    auto obj = arfs::OBJLoader("../resources/low_poly_fox.obj");
+    obj.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
 
     for(;;)
     {
-        video.showFrame("tracker");
         const auto& frame = video.getNextFrame();
 
-        if(video.getCurrentFrame().empty() || arfs::Video::escIsPressed())
+        if(frame.empty() || arfs::Video::escIsPressed())
             break;
 
-        arfs::Utils::saveImage(video.getCurrentFrame(), "../background_img.png");
+        auto frameTag = arfs::Segmentation::recognizeTag(frame, arfs::Segmentation::extractTagCandidates(frame),
+                                                    arfs::Segmentation::getARTagCode(tag));
 
-        trackers.update(frame);
-        trackers.showTrackedPoint(frame);
+        if(!frameTag.empty())
+        {
+            arfs::Segmentation::augmentObject(obj, frame.clone(), frameTag);
 
-        auto movement = trackers.getAvgMovement();
-        view.translate(movement[0], movement[1], 0);
-        view.setBackgroundImage("../background_img.png");
-        view.update();
+            for(size_t i = 0 ; i < frameTag.size()-1;i++)
+                cv::line( frame, frameTag[i], frameTag[i+1], cv::Scalar(0,255,0), 2, cv::LINE_AA);
+            cv::line( frame, frameTag[3], frameTag[0], cv::Scalar(0,255,0), 2, cv::LINE_AA);
+        }
+
+        arfs::Utils::showImage(frame, "original");
     }
 
     return 0;

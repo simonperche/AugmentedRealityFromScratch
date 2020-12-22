@@ -3,31 +3,40 @@
 //
 
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include "../headers/Video.hpp"
 
 namespace arfs
 {
-    Video::Video(const std::string& name)
-            : m_video(name)
+    Video::Video(const std::string& name, double xResize, double yResize)
+            : m_video(name), m_resizeValues(xResize, yResize)
     {
         if(!m_video.isOpened())
             throw std::exception("Error : the video is not opened. Please check the file name.");
 
-        m_currentFrame = getNextFrame();
+        m_video >> m_currentFrame;
     }
 
-    Video::Video(int camId)
-            : m_video(camId)
+    Video::Video(int camId, double xResize, double yResize)
+            : m_video(camId), m_resizeValues(xResize, yResize)
     {
         if(!m_video.isOpened())
             throw std::exception("Error : the webcam is not opened. Please check the id.");
-        m_currentFrame = getNextFrame();
+        m_video >> m_currentFrame;
     }
 
     cv::Mat Video::getNextFrame()
     {
         m_video >> m_currentFrame;
-        return m_currentFrame;
+        return getCurrentFrame();
+    }
+
+    cv::Mat Video::getCurrentFrame()
+    {
+        cv::Mat resized;
+        if(!m_currentFrame.empty())
+            cv::resize(m_currentFrame, resized, cv::Size(), m_resizeValues[0], m_resizeValues[1]);
+        return resized;
     }
 
     bool Video::escIsPressed()
@@ -35,10 +44,9 @@ namespace arfs
         return cv::waitKey(1) == 27;
     }
 
-    void Video::showFrame(const std::string& winname)
+    void Video::restartFromBeginning()
     {
-        cv::imshow(winname, m_currentFrame);
+        m_video.set(cv::CAP_PROP_POS_FRAMES, 0);
     }
-
 }
 
