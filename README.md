@@ -6,7 +6,15 @@
 An augmented reality application from scratch using OpenCV for learning purpose.
 
 ## Tasks
-A this moment, everything has to be done.
+| Feature                                  | Progress     |
+|------------------------------------------|--------------|
+| Recognize ARTag                          | Done         |
+| Find camera position                     | Done         |
+| Project 3D objects                       | Done         |
+| Add normals support                      | Done         |
+| Add materials support                    | To do        |
+| Stabilize detected tag                   | To do        |
+| Improve the robustness of tag detection  | To do        |
 
 ## Installation
 ### Dependencies

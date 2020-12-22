@@ -35,6 +35,3 @@
 
 # Builds
 cmake-build*/
-
-# Video 
-video/
