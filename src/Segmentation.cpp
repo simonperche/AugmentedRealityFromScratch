@@ -4,7 +4,6 @@
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>
 #include <iostream>
 #include <cmath>
@@ -12,53 +11,9 @@
 #include <algorithm>
 #include "../headers/Segmentation.hpp"
 #include "../headers/Utils.hpp"
-#include "../headers/OBJLoader.h"
 
 namespace arfs
 {
-
-    cv::Mat
-    Segmentation::segmentation(const cv::Mat& img, const std::vector<std::pair<cv::Point2d, double>>& depthPoints)
-    {
-//        cv::Mat grayFrame;
-//        cv::cvtColor(img, grayFrame, cv::COLOR_BGR2GRAY);
-//
-//        for(const auto& p : depthPoints)
-//        {
-//            cv::circle(grayFrame, p.first, 5, cv::Scalar(p.second, p.second, p.second), -1, 1);
-//        }
-//
-//        cv::imshow("gray", grayFrame);
-
-//Prepare the image for findContours
-        cv::Mat image = img.clone();
-        cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
-        cv::threshold(image, image, 128, 255, cv::THRESH_BINARY);
-
-        //Find the contours. Use the contourOutput Mat so the original image doesn't get overwritten
-        std::vector<std::vector<cv::Point> > contours;
-        cv::Mat contourOutput = image.clone();
-        cv::findContours(contourOutput, contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
-
-        //Draw the contours
-        cv::Mat contourImage(image.size(), CV_8UC3, cv::Scalar(0, 0, 0));
-        cv::Scalar colors[3];
-        colors[0] = cv::Scalar(255, 0, 0);
-        colors[1] = cv::Scalar(0, 255, 0);
-        colors[2] = cv::Scalar(0, 0, 255);
-        for(size_t idx = 0; idx < contours.size(); idx++)
-        {
-            cv::drawContours(contourImage, contours, int(idx), colors[idx % 3]);
-        }
-
-        cv::imshow("Input Image", image);
-        cv::imshow("Contours", contourImage);
-
-        cv::waitKey();
-
-        return cv::Mat();
-    }
-
     std::vector<std::vector<cv::Point>> Segmentation::extractTagCandidates(const cv::Mat& frame)
     {
         std::vector<std::vector<cv::Point>> candidates{};
@@ -67,26 +22,16 @@ namespace arfs
         std::vector<cv::Vec4i> hierarchy;
         cv::findContours(thresh, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
-//        auto rng = cv::RNG(12345);
-//        auto drawing = cv::Mat(thresh.size(), CV_8UC3, cv::Scalar(0));
-
         auto frame_copy = frame.clone();
 
-        for(size_t i = 0; i < contours.size(); i++)
+        for(const auto& contour : contours)
         {
-            if(cv::contourArea(contours[i]) <= 1000)
+            if(cv::contourArea(contour) <= 1000)
                 continue;
-
-//            cv::Scalar color = cv::Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-//            cv::drawContours(drawing, contours, (int) i, color, 2, cv::LINE_8, hierarchy, 0);
-
-//            auto hull_mask = cv::Mat(frame.size(), CV_8UC1, cv::Scalar(0));
 
             //std::vector<std::vector> is needed to use draw contours
             auto hull = std::vector<std::vector<cv::Point>>(1);
-            cv::convexHull(contours[i], hull[0]);
-//            cv::drawContours(hull_mask, hull, 0, cv::Scalar(255), 1, cv::LINE_8);
-//            cv::fillPoly(hull_mask, hull, cv::Scalar(255));
+            cv::convexHull(contour, hull[0]);
 
             const double& angleThreshold = 5;
             const double& distanceThreshold = 20;
@@ -125,7 +70,8 @@ namespace arfs
                     {
                         group.push_back(p2);
                         found = true;
-                    } else if(std::find(group.begin(), group.end(), p2) != group.end())
+                    }
+                    else if(std::find(group.begin(), group.end(), p2) != group.end())
                     {
                         group.push_back(p1);
                         found = true;
@@ -178,7 +124,7 @@ namespace arfs
     }
 
     std::vector<cv::Point>
-    Segmentation::recognizeTag(const cv::Mat& frame, std::vector<std::vector<cv::Point>> candidates,
+    Segmentation::recognizeTag(const cv::Mat& frame, const std::vector<std::vector<cv::Point>>& candidates,
                                std::array<int, 64> code)
     {
         std::vector<cv::Point> tag{};
@@ -240,23 +186,17 @@ namespace arfs
     void Segmentation::showAxis(const cv::Mat& homography, const std::vector<cv::Point>& tag, cv::Mat& frame)
     {
         auto intrinsic = cv::Matx33d(576.1357414740778, 0, 311.1655482832962,
-                                    0, 573.553686984999, 233.570912689823,
-                                    0, 0, 1);
-//        auto intrinsic = cv::Matx33d(3.6, 0, frame.cols / 2.,
-//                                     0, 3.6, frame.rows / 2.,
-//                                     0, 0, 1);
+                                     0, 573.553686984999, 233.570912689823,
+                                     0, 0, 1);
+
         auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
 
-        auto obj_points = std::vector<cv::Point3d>{cv::Point3d(m_tagSize/2, m_tagSize/2, 0),
-                                                   cv::Point3d(m_tagSize/2, (m_tagSize/2)+100, 0),
-                                                   cv::Point3d((m_tagSize/2)+100, m_tagSize/2, 0),
-                                                   cv::Point3d(m_tagSize/2, m_tagSize/2, 100)};
+        auto obj_points = std::vector<cv::Point3d>{cv::Point3d(m_tagSize / 2., m_tagSize / 2., 0),
+                                                   cv::Point3d(m_tagSize / 2., (m_tagSize / 2.) + 100, 0),
+                                                   cv::Point3d((m_tagSize / 2.) + 100, m_tagSize / 2., 0),
+                                                   cv::Point3d(m_tagSize / 2., m_tagSize / 2., 100)};
 
         auto scene_points = projectPoint(obj_points, projectionMatrix);
-//        std::cout << std::endl << "AXIS" << std::endl;
-//        std::cout << homography << std::endl;
-//        std::cout << scene_points << std::endl;
-//        std::cout << tag << std::endl;
 
         cv::line(frame, scene_points[0], scene_points[1], cv::Scalar(0, 0, 255), 3);
         cv::line(frame, scene_points[0], scene_points[2], cv::Scalar(0, 255, 0), 3);
@@ -264,7 +204,8 @@ namespace arfs
         cv::imshow("axis", frame);
     }
 
-    std::vector<cv::Point2i> Segmentation::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)
+    std::vector<cv::Point2i>
+    Segmentation::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)
     {
         std::vector<cv::Point2i> scene_points(points.size());
         for(int i = 0; i < points.size(); i++)
@@ -322,22 +263,24 @@ namespace arfs
                                      0, 573.553686984999, 233.570912689823,
                                      0, 0, 1);
         auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
-        cv::Mat translation = (intrinsic.inv() * projectionMatrix).col(3);
 
         auto faces = obj.getFaces();
 
-        std::sort(faces.begin(), faces.end(), [&](Face a, Face b)
+        // Painter's algorithm
+        cv::Mat translation = (intrinsic.inv() * projectionMatrix).col(3);
+        std::sort(faces.begin(), faces.end(), [&](const Face& a, const Face& b)
         {
-            auto a_mean = cv::Point3d(0,0,0);
-            auto b_mean = cv::Point3d(0,0,0);
+            auto a_mean = cv::Point3d(0, 0, 0);
+            auto b_mean = cv::Point3d(0, 0, 0);
             for(const auto& point : a.points)
                 a_mean += point;
             for(const auto& point : b.points)
                 b_mean += point;
-            a_mean /= (double)a.points.size();
-            b_mean /= (double)b.points.size();
+            a_mean /= (double) a.points.size();
+            b_mean /= (double) b.points.size();
             return cv::norm(cv::Point3d(translation) - a_mean) < cv::norm(cv::Point3d(translation) - b_mean);
         });
+
         for(auto& face : faces)
         {
             for(auto& point : face.points)
@@ -346,19 +289,15 @@ namespace arfs
                 point *= 3;
 
                 //Center
-                point.x += int(m_tagSize/2);
-                point.y += int(m_tagSize/2);
+                point.x += int(m_tagSize / 2);
+                point.y += int(m_tagSize / 2);
             }
             auto scene_points = projectPoint(face.points, projectionMatrix);
 
-            auto light = cv::Vec3d(-1,1,-1);
+            auto light = cv::Vec3d(-1, 1, -1);
             auto angle = arfs::Utils::angleBetween(face.normal, light, arfs::AngleType::DEG);
-            auto lightValue = (angle*255)/180;
-            cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue,lightValue,lightValue));
-//            std::cout << "FACE" << std::endl;
-//            std::cout << homography << std::endl;
-//            std::cout << face << std::endl;
-//            std::cout << scene_points << std::endl;
+            auto lightValue = (angle * 255) / 180;
+            cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue, lightValue, lightValue));
 
             cv::imshow("object", frame);
         }
@@ -368,40 +307,10 @@ namespace arfs
     {
         if(srcPoints.size() != 4) return cv::Mat();
 
-        const int factor = 6;
         auto dstPoints = std::vector<cv::Point>{cv::Point(0, 0),
                                                 cv::Point(m_tagSize, 0),
                                                 cv::Point(m_tagSize, m_tagSize),
                                                 cv::Point(0, m_tagSize)};
-
-        // -- This was a test trying to augment the number of point to compute a better homography
-//        std::vector<cv::Point2d> srcPointsAugmented{};
-//        std::vector<cv::Point> dstPointsAugmented{};
-//
-//        auto getPourcentageOfSegment = [](const cv::Point& p1, const cv::Point& p2, double i, double factor)
-//        {
-//            return static_cast<cv::Point2d>(p1) + (i/factor)*(static_cast<cv::Point2d>(p2) - static_cast<cv::Point2d>(p1));
-//        };
-//
-//        //Divide polygon in a grid to augment the number of points
-//        for(int i = 0 ; i <= factor ; i++)
-//        {
-//            cv::Point2d p1_src = getPourcentageOfSegment(srcPoints[0], srcPoints[1], i, factor);
-//            cv::Point2d p2_src = getPourcentageOfSegment(srcPoints[3], srcPoints[2], i, factor);
-//
-//            cv::Point2d p1_dst = getPourcentageOfSegment(dstPoints[0], dstPoints[1], i, factor);
-//            cv::Point2d p2_dst = getPourcentageOfSegment(dstPoints[3], dstPoints[2], i, factor);
-//            for(int j = 0 ; j <= factor ; j++)
-//            {
-//                cv::Point2d p_src = getPourcentageOfSegment(p1_src, p2_src, j, factor);
-//                srcPointsAugmented.emplace_back(p_src);
-//
-//                cv::Point2d p_dst = getPourcentageOfSegment(p1_dst, p2_dst, j, factor);
-//                dstPointsAugmented.emplace_back(p_dst);
-//            }
-//        }
-//
-//        cv::Mat homography = cv::findHomography(srcPointsAugmented, dstPointsAugmented);
 
         cv::Mat homography = cv::findHomography(srcPoints, dstPoints);
 
