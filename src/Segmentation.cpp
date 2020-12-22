@@ -239,15 +239,18 @@ namespace arfs
 
     void Segmentation::showAxis(const cv::Mat& homography, const std::vector<cv::Point>& tag, cv::Mat& frame)
     {
-        auto intrinsic = cv::Matx33d(3.6, 0, frame.cols / 2.,
-                                     0, 3.6, frame.rows / 2.,
-                                     0, 0, 1);
+        auto intrinsic = cv::Matx33d(576.1357414740778, 0, 311.1655482832962,
+                                    0, 573.553686984999, 233.570912689823,
+                                    0, 0, 1);
+//        auto intrinsic = cv::Matx33d(3.6, 0, frame.cols / 2.,
+//                                     0, 3.6, frame.rows / 2.,
+//                                     0, 0, 1);
         auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
 
         auto obj_points = std::vector<cv::Point3d>{cv::Point3d(m_tagSize/2, m_tagSize/2, 0),
                                                    cv::Point3d(m_tagSize/2, (m_tagSize/2)+100, 0),
                                                    cv::Point3d((m_tagSize/2)+100, m_tagSize/2, 0),
-                                                   cv::Point3d(m_tagSize/2, m_tagSize/2, 10)};
+                                                   cv::Point3d(m_tagSize/2, m_tagSize/2, 100)};
 
         auto scene_points = projectPoint(obj_points, projectionMatrix);
 //        std::cout << std::endl << "AXIS" << std::endl;
@@ -315,20 +318,32 @@ namespace arfs
 
         if(homography.empty()) return;
 
-        auto intrinsic = cv::Matx33d(3.6, 0, frame.cols / 2.,
-                                     0, 3.6, frame.rows / 2.,
+        auto intrinsic = cv::Matx33d(576.1357414740778, 0, 311.1655482832962,
+                                     0, 573.553686984999, 233.570912689823,
                                      0, 0, 1);
         auto projectionMatrix = getProjectionMatrix(homography, intrinsic);
+        cv::Mat translation = (intrinsic.inv() * projectionMatrix).col(3);
 
         auto faces = obj.getFaces();
+
+        std::sort(faces.begin(), faces.end(), [&](Face a, Face b)
+        {
+            auto a_mean = cv::Point3d(0,0,0);
+            auto b_mean = cv::Point3d(0,0,0);
+            for(const auto& point : a.points)
+                a_mean += point;
+            for(const auto& point : b.points)
+                b_mean += point;
+            a_mean /= (double)a.points.size();
+            b_mean /= (double)b.points.size();
+            return cv::norm(cv::Point3d(translation) - a_mean) < cv::norm(cv::Point3d(translation) - b_mean);
+        });
         for(auto& face : faces)
         {
             for(auto& point : face.points)
             {
                 //Scale
-                point.x *= 5;
-                point.y *= 5;
-                point.z *= 0.05;
+                point *= 3;
 
                 //Center
                 point.x += int(m_tagSize/2);
