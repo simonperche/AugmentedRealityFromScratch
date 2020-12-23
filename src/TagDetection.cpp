@@ -15,8 +15,18 @@ namespace arfs
     std::vector<cv::Point> TagDetection::update(const cv::Mat& frame)
     {
         //TODO: improve robustness (by tracking? other methods?)
-        m_tagCorners = recognizeTag(frame, extractTagCandidates(frame));
+        fullDetection(frame);
         return m_tagCorners;
+    }
+
+    void TagDetection::fullDetection(const cv::Mat& frame)
+    {
+        auto tagCandidates = extractTagCandidates(frame);
+        for(auto candidate : tagCandidates)
+        {
+            if(recognizeTag(frame, candidate))
+                break;
+        }
     }
 
     std::vector<std::vector<cv::Point>> TagDetection::extractTagCandidates(const cv::Mat& frame)
@@ -124,49 +134,44 @@ namespace arfs
         return candidates;
     }
 
-    std::vector<cv::Point> TagDetection::recognizeTag(const cv::Mat& frame, const std::vector<std::vector<cv::Point>>& candidates)
+    bool TagDetection::recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate)
     {
-        //TODO: remove the usage of homography and work directly on image (I suppose it could work)
+        m_tagCorners.clear();
 
-        std::vector<cv::Point> tag{};
+        //TODO: remove the usage of homography and work directly on image (I suppose it could work)
+        cv::Mat candidate_mat(300, 300, CV_8UC3);
         auto dstPoints = std::vector<cv::Point>{cv::Point(0, 0),
                                                 cv::Point(300, 0),
                                                 cv::Point(300, 300),
                                                 cv::Point(0, 300)};
 
-        for(auto points : candidates)
+        bool found = false;
+
+        //Try all rotations, homography is sensible to order of points
+        for(int rotation = 0; rotation < 4; rotation++)
         {
-            cv::Mat candidate(300, 300, CV_8UC3);
-            bool found = false;
+            std::rotate(candidate.begin(), candidate.begin() + 1, candidate.end());
+            cv::Mat homography = cv::findHomography(candidate, dstPoints);
+            if(homography.empty()) continue;
 
-            //Try all rotations, homography is sensible to order of points
-            for(int rotation = 0; rotation < 4; rotation++)
+            cv::warpPerspective(frame, candidate_mat, homography, cv::Size(candidate_mat.cols, candidate_mat.rows));
+
+            cv::cvtColor(candidate_mat, candidate_mat, cv::COLOR_BGR2GRAY);
+            cv::threshold(candidate_mat, candidate_mat, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
+
+            auto candidateTag = arfs::ARTag(candidate_mat);
+            if(candidateTag.getCode() == m_tagToDetect.getCode())
             {
-                std::rotate(points.begin(), points.begin() + 1, points.end());
-                cv::Mat homography = cv::findHomography(points, dstPoints);
-                if(homography.empty()) continue;
+                found = true;
+                m_tagCorners = candidate;
 
-                cv::warpPerspective(frame, candidate, homography, cv::Size(candidate.cols, candidate.rows));
+                if(m_verbose)
+                    cv::imshow("candidate", candidate_mat);
 
-                cv::cvtColor(candidate, candidate, cv::COLOR_BGR2GRAY);
-                cv::threshold(candidate, candidate, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
-
-                auto candidateTag = arfs::ARTag(candidate);
-                if(candidateTag.getCode() == m_tagToDetect.getCode())
-                {
-                    found = true;
-                    tag = points;
-
-                    if(m_verbose)
-                        cv::imshow("candidate", candidate);
-
-                    break;
-                }
+                break;
             }
-
-            if(found) break;
         }
 
-        return tag;
+        return found;
     }
 }

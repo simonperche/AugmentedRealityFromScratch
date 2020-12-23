@@ -24,9 +24,10 @@ namespace arfs
         std::vector<cv::Point> m_tagCorners;
         bool m_verbose;
 
+        void fullDetection(const cv::Mat& frame);
         static std::vector<std::vector<cv::Point>> extractTagCandidates(const cv::Mat& frame);
 
-        std::vector<cv::Point> recognizeTag(const cv::Mat& frame, const std::vector<std::vector<cv::Point>>& candidates);
+        bool recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate);
     };
 }
 
