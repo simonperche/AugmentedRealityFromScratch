@@ -19,7 +19,6 @@ namespace arfs
     class Object
     {
     public:
-        Object();
         void addFace(std::vector<cv::Point3d> points, const cv::Vec3d& normal = cv::Vec3d(0,0,0));
         void rotate(double xAngle, double yAngle, double zAngle);
         void scale(double scale);
@@ -28,7 +27,7 @@ namespace arfs
         { return m_faces; }
 
     private:
-        std::vector<Face> m_faces;
+        std::vector<Face> m_faces{};
     };
 }
 

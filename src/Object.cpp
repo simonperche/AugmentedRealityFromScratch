@@ -8,11 +8,6 @@
 
 namespace arfs
 {
-    Object::Object() : m_faces()
-    {
-
-    }
-
     void Object::scale(double scale)
     {
         for(auto& face : m_faces)

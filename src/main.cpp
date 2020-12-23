@@ -15,6 +15,7 @@
 
 int main()
 {
+    //TODO: documentation (doxygen?)
     //TODO: Add args to launch the program from command line
 
     auto video = arfs::Video(0, 1,1);
@@ -26,7 +27,7 @@ int main()
 //                            "../resources/images_calibration/", 0.2);
     camera.loadParameters("../resources/webcam.cam");
 
-    auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"), true);
+    auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
 
     auto scene = arfs::Scene(camera);
     scene.addObject("../resources/monkey.obj");

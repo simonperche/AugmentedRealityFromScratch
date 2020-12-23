@@ -34,7 +34,7 @@ namespace arfs
 
     private:
         std::vector<arfs::Object> m_objects{};
-        arfs::Camera m_camera{};
+        arfs::Camera m_camera;
     };
 }
 

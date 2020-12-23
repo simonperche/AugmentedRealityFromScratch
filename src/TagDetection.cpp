@@ -6,7 +6,6 @@
 #include <numeric>
 #include <opencv2/highgui.hpp>
 #include <opencv2/calib3d.hpp>
-#include <iostream>
 #include "../headers/TagDetection.hpp"
 #include "../headers/Utils.hpp"
 

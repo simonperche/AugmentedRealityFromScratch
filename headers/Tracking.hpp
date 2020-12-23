@@ -35,7 +35,7 @@ namespace arfs
             };
         };
 
-        static constexpr unsigned int m_roiSize = 20;
+        static constexpr unsigned int m_roiSize{20};
 
         // I didn't use cv::MultiTracker because I needed to know if the tracking is lost
         std::vector<Tracker> m_multiTracker{};

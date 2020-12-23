@@ -15,9 +15,6 @@ namespace arfs
     class Camera
     {
     public:
-        Camera()
-        {};
-
         void loadParameters(const std::string& filename);
 
         void calibrateAndSave(const std::string& filename, const std::array<int, 2>& checkerBoardSize,
@@ -38,7 +35,7 @@ namespace arfs
     private:
         cv::Matx33d m_intrinsicParameters{};
         cv::Mat m_projectionMatrix{};
-        const int m_tagProjectionSize = 300;
+        const int m_tagProjectionSize{300};
 
         void saveParametersToFile(const std::string& filename);
     };

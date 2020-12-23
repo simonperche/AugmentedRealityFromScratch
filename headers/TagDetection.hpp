@@ -23,7 +23,7 @@ namespace arfs
 
     private:
         arfs::ARTag m_tagToDetect;
-        std::vector<cv::Point> m_tagCorners;
+        std::vector<cv::Point> m_tagCorners{};
         arfs::Tracking m_tracking{};
         bool m_verbose;
 
