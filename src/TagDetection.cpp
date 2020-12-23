@@ -32,7 +32,6 @@ namespace arfs
 
     void TagDetection::fullDetection(const cv::Mat& frame)
     {
-        std::cout << "FULL DETECTION" << std::endl;
         auto tagCandidates = extractTagCandidates(frame);
         for(auto candidate : tagCandidates)
         {
