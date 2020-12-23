@@ -14,41 +14,31 @@ namespace arfs
     class Tracking
     {
     public:
-        explicit Tracking(const cv::Mat& frame);
-        void update(const cv::Mat& frame);
+        void addPoints(const std::vector<cv::Point>& points, const cv::Mat& initFrame);
+
+        std::vector<cv::Point> update(const cv::Mat& frame);
+
         void showTrackedPoint(const cv::Mat& frame);
-        cv::Vec2d getAvgMovement();
-        std::vector<std::pair<cv::Point2d, double>> getDepthPoints(const cv::Mat& frame);
+
+        void clear()
+        { m_multiTracker.clear(); }
+
     private:
-        struct TrackedPoint
-        {
-            cv::Point2d lastPosition{};
-            double lastAngle{0};
-
-            //Distances in pixels
-            double totalDistance{0};
-            double lastDistance{0};
-
-            bool isTracked{true};
-        };
-
         struct Tracker
         {
             cv::Ptr<cv::Tracker> tracker;
             cv::Rect2d ROI;
 
-            cv::Point2d findCenter()
+            cv::Point2d point() const
             {
                 return (ROI.br() + ROI.tl()) * 0.5;
             };
         };
 
-        static constexpr unsigned int m_roiSize = 30;
-        static constexpr unsigned int m_nbTrackersMax = 1000;
-        std::vector<cv::Point2d> m_corners{};
+        static constexpr unsigned int m_roiSize = 20;
+
         // I didn't use cv::MultiTracker because I needed to know if the tracking is lost
         std::vector<Tracker> m_multiTracker{};
-        std::vector<TrackedPoint> m_trackedPoints{};
     };
 }
 

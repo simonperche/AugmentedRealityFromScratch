@@ -26,7 +26,7 @@ int main()
 //                            "../resources/images_calibration/", 0.2);
     camera.loadParameters("../resources/webcam.cam");
 
-    auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
+    auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"), true);
 
     auto scene = arfs::Scene(camera);
     scene.addObject("../resources/monkey.obj");

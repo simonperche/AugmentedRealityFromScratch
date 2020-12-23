@@ -7,7 +7,9 @@
 
 #include <vector>
 #include <opencv2/core.hpp>
+
 #include "ARTag.hpp"
+#include "Tracking.hpp"
 
 namespace arfs
 {
@@ -22,9 +24,11 @@ namespace arfs
     private:
         arfs::ARTag m_tagToDetect;
         std::vector<cv::Point> m_tagCorners;
+        arfs::Tracking m_tracking{};
         bool m_verbose;
 
         void fullDetection(const cv::Mat& frame);
+
         static std::vector<std::vector<cv::Point>> extractTagCandidates(const cv::Mat& frame);
 
         bool recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate);

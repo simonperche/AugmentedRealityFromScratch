@@ -14,18 +14,34 @@ namespace arfs
 {
     std::vector<cv::Point> TagDetection::update(const cv::Mat& frame)
     {
-        //TODO: improve robustness (by tracking? other methods?)
-        fullDetection(frame);
+        if(m_tagCorners.empty())
+        {
+            fullDetection(frame);
+        }
+        else
+        {
+            auto candidate = m_tracking.update(frame);
+            if(candidate.empty() || !recognizeTag(frame, candidate))
+                fullDetection(frame);
+            else if(m_verbose)
+                m_tracking.showTrackedPoint(frame);
+        }
+
         return m_tagCorners;
     }
 
     void TagDetection::fullDetection(const cv::Mat& frame)
     {
+        std::cout << "FULL DETECTION" << std::endl;
         auto tagCandidates = extractTagCandidates(frame);
         for(auto candidate : tagCandidates)
         {
             if(recognizeTag(frame, candidate))
+            {
+                m_tracking.clear();
+                m_tracking.addPoints(m_tagCorners, frame);
                 break;
+            }
         }
     }
 
