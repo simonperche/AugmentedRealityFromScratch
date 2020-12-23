@@ -4,6 +4,7 @@
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include "../headers/exceptions.hpp"
 #include "../headers/Renderer.hpp"
 #include "../headers/Utils.hpp"
 
@@ -11,9 +12,8 @@ namespace arfs
 {
     void Renderer::render(const cv::Mat& frame, const arfs::Scene& scene)
     {
-        //TODO: throw an exception if empty
         if(scene.getCamera().getProjectionMatrix().empty())
-            return;
+            throw arfs::exceptions::EmptyProjectionMatrix();
 
         for(const auto& object : scene.getObjects())
         {
@@ -46,8 +46,9 @@ namespace arfs
         {
             for(auto& point : face.points)
             {
+                //TODO: move scaling in object class
                 //Scale
-                point *= 3;
+                point *= 100;
 
                 //Center
                 point.x += int(tagProjectionSize / 2);

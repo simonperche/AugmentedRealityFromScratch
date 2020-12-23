@@ -123,7 +123,8 @@ set(HEADERS_FILES
         headers/Camera.hpp
         headers/Object.hpp
         headers/Scene.hpp
-        headers/Renderer.hpp)
+        headers/Renderer.hpp
+        headers/exceptions.hpp)
 
 add_executable(${APP_NAME} ${SOURCE_FILES} ${HEADERS_FILES})
 

@@ -9,22 +9,27 @@
 #include "../headers/ARTag.hpp"
 #include "../headers/Utils.hpp"
 #include "../headers/Camera.hpp"
+#include "../headers/exceptions.hpp"
+
+#include <iostream>
 
 int main()
 {
-//    auto video = arfs::Video(0, 1,1);
-    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
+    //TODO: Add args to launch the program from command line
+
+    auto video = arfs::Video(0, 1,1);
+//    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
 
     arfs::Camera camera{};
 //    camera.calibrateAndSave("../resources/oneplus.cam",
 //                            std::array<int,2>{11,11},
 //                            "../resources/images_calibration/", 0.2);
-    camera.loadParameters("../resources/oneplus.cam");
+    camera.loadParameters("../resources/webcam.cam");
 
     auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
 
     auto scene = arfs::Scene(camera);
-    scene.addObject("../resources/low_poly_fox.obj");
+    scene.addObject("../resources/monkey.obj");
     scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
 
     cv::Mat frame;
@@ -42,7 +47,17 @@ int main()
         if(!tagDetected.empty())
         {
             scene.getCamera().updateProjectionMatrix(tagDetected);
-            arfs::Renderer::render(renderFrame, scene);
+
+            try
+            {
+                arfs::Renderer::render(renderFrame, scene);
+            }
+            catch(arfs::exceptions::EmptyProjectionMatrix& e)
+            {
+                std::cout << "Error : " << e.what() << std::endl;
+                std::cout << "Maybe you forgot to update projection matrix of camera. "
+                             "Or if tag was not detected, camera could not update projection matrix." << std::endl;
+            }
 
             arfs::Renderer::drawPolygon(frame, tagDetected);
         }
