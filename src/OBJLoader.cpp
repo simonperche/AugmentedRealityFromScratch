@@ -8,6 +8,7 @@
 #include <sstream>
 #include <opencv2/core.hpp>
 #include "../headers/OBJLoader.hpp"
+#include "../headers/Utils.hpp"
 
 namespace arfs
 {
@@ -57,17 +58,7 @@ namespace arfs
 
                 for(auto it = line_split.begin() + 1; it != line_split.end(); it++)
                 {
-                    //TODO: replace by Utils::split
-                    std::vector<std::string> faces_split{};
-                    size_t pos;
-                    std::string token{};
-                    while((pos = it->find('/')) != std::string::npos)
-                    {
-                        token = it->substr(0, pos);
-                        faces_split.emplace_back(token);
-                        it->erase(0, pos + 1);
-                    }
-                    faces_split.emplace_back(*it);
+                    auto faces_split = arfs::Utils::split(*it, '/');
 
                     if(faces_split.size() != 3) continue;
 

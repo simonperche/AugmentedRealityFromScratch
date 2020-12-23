@@ -52,6 +52,8 @@ namespace arfs
             }
             auto scene_points = projectPoint(face.points, camera.getProjectionMatrix());
 
+            //TODO: add more shading methods
+            //Flat shading
             auto light = cv::Vec3d(-1, 1, -1);
             auto angle = arfs::Utils::angleBetween(face.normal, light, arfs::AngleType::DEG);
             auto lightValue = (angle * 255) / 180;
