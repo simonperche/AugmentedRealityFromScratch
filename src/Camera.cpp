@@ -5,8 +5,11 @@
 #include <fstream>
 #include <iostream>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include "../headers/Camera.hpp"
 #include "../headers/Utils.hpp"
+#include "../headers/Video.hpp"
 
 namespace arfs
 {
@@ -28,9 +31,9 @@ namespace arfs
 
             try
             {
-                values[i] = std::stod(line_split[1]);
-                values[i+1] = std::stod(line_split[2]);
-                values[i+2] = std::stod(line_split[3]);
+                values[i] = std::stod(line_split[0]);
+                values[i + 1] = std::stod(line_split[1]);
+                values[i + 2] = std::stod(line_split[2]);
                 i += 3;
             }
             catch(const std::exception& e)
@@ -43,13 +46,96 @@ namespace arfs
         m_intrinsicParameters = cv::Matx33d(values.data());
     }
 
-    void Camera::calibrateAndSave(const std::string& filename)
+    void Camera::calibrateAndSave(const std::string& filename, const std::array<int, 2>& checkerBoardSize,
+                                  const std::string& imgFolder, double resizeFactor,
+                                  arfs::Video cap, bool needToTakePictures)
     {
-        //TODO: the whole function
+        cv::Mat frame;
+        if(needToTakePictures)
+        {
+            int cpt = 1;
+            for(;;)
+            {
+                frame = cap.getNextFrame();
 
-        m_intrinsicParameters = cv::Matx33d(576.1357414740778, 0, 311.1655482832962,
-                                     0, 573.553686984999, 233.570912689823,
-                                     0, 0, 1);
+                int key = cv::waitKey(30);
+
+                if(frame.empty() || key == 27)
+                    break;
+
+                cv::imshow("cam", frame);
+
+                if(key == 's')
+                {
+                    const std::string filename_img = imgFolder + "img_" + std::to_string(cpt++) + ".jpg";
+                    std::cout << "Saved : " << filename_img << std::endl;
+                    cv::imwrite(filename_img, frame);
+                }
+            }
+
+            cv::destroyWindow("cam");
+        }
+
+        // Based on https://www.learnopencv.com/camera-calibration-using-opencv/
+
+        // Creating vector to store vectors of 3D points for each checkerboard image
+        std::vector<std::vector<cv::Point3f> > objPoints;
+
+        // Creating vector to store vectors of 2D points for each checkerboard image
+        std::vector<std::vector<cv::Point2f> > imgPoints;
+
+        // Defining the world coordinates for 3D points
+        std::vector<cv::Point3f> objp;
+        for(int i = 0; i < checkerBoardSize[1]; i++)
+        {
+            for(int j = 0; j < checkerBoardSize[0]; j++)
+                objp.emplace_back(j, i, 0);
+        }
+
+
+        std::vector<cv::String> images;
+        std::string path = imgFolder + "*.jpg";
+
+        cv::glob(path, images);
+
+        cv::Mat gray;
+
+        std::vector<cv::Point2f> corner_pts;
+        bool success;
+
+        for(auto& image : images)
+        {
+            frame = cv::imread(image);
+            cv::resize(frame, frame, cv::Size(), resizeFactor, resizeFactor);
+            cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+            success = cv::findChessboardCorners(gray, cv::Size(checkerBoardSize[0], checkerBoardSize[1]), corner_pts,
+                                                cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK |
+                                                cv::CALIB_CB_NORMALIZE_IMAGE);
+
+            if(success)
+            {
+                cv::TermCriteria criteria(cv::TermCriteria::EPS | cv::TermCriteria::MAX_ITER, 30, 0.001);
+
+                // refining pixel coordinates for given 2d points.
+                cv::cornerSubPix(gray, corner_pts, cv::Size(11, 11), cv::Size(-1, -1), criteria);
+
+                cv::drawChessboardCorners(frame, cv::Size(checkerBoardSize[0], checkerBoardSize[1]), corner_pts, success);
+
+                objPoints.push_back(objp);
+                imgPoints.push_back(corner_pts);
+            }
+
+            cv::imshow("Image", frame);
+        }
+
+        cv::destroyWindow("Image");
+
+        cv::Mat distCoeffs, R, T;
+
+        cv::calibrateCamera(objPoints, imgPoints, cv::Size(gray.rows, gray.cols), m_intrinsicParameters, distCoeffs, R, T);
+
+        std::cout << "cameraMatrix : " << m_intrinsicParameters << std::endl;
 
         saveParametersToFile(filename);
     }
@@ -60,9 +146,9 @@ namespace arfs
 
         file << "# Intrinsic matrix for camera" << std::endl;
 
-        for(int i = 0 ; i < 3 ; i++)
+        for(int i = 0; i < 3; i++)
         {
-            for(int j = 0 ; j < 3 ; j++)
+            for(int j = 0; j < 3; j++)
             {
                 file << m_intrinsicParameters.row(i).col(j).val[0];
                 if(j != 2)

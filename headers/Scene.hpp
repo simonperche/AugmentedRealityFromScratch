@@ -14,7 +14,7 @@ namespace arfs
     class Scene
     {
     public:
-        Scene()
+        explicit Scene(const arfs::Camera& camera) : m_camera(camera)
         {};
 
         void addObject(const std::string& filename);

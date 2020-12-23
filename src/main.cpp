@@ -8,21 +8,29 @@
 #include "../headers/TagDetection.hpp"
 #include "../headers/ARTag.hpp"
 #include "../headers/Utils.hpp"
+#include "../headers/Camera.hpp"
 
 int main()
 {
-    auto video = arfs::Video(0, 1,1);
-//    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
+//    auto video = arfs::Video(0, 1,1);
+    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
+
+    arfs::Camera camera{};
+//    camera.calibrateAndSave("../resources/oneplus.cam",
+//                            std::array<int,2>{11,11},
+//                            "../resources/images_calibration/", 0.2);
+    camera.loadParameters("../resources/oneplus.cam");
 
     auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
-    auto scene = arfs::Scene();
+
+    auto scene = arfs::Scene(camera);
     scene.addObject("../resources/low_poly_fox.obj");
-    scene.getCamera().calibrateAndSave("../resources/webcam.cam");
     scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
 
+    cv::Mat frame;
     for(;;)
     {
-        const auto& frame = video.getNextFrame();
+        frame = video.getNextFrame();
 
         if(frame.empty() || arfs::Video::escIsPressed())
             break;

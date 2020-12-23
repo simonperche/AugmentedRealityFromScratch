@@ -8,6 +8,7 @@
 #include <opencv2/core/matx.hpp>
 #include <string>
 #include <opencv2/core/mat.hpp>
+#include "Video.hpp"
 
 namespace arfs
 {
@@ -19,7 +20,9 @@ namespace arfs
 
         void loadParameters(const std::string& filename);
 
-        void calibrateAndSave(const std::string& filename);
+        void calibrateAndSave(const std::string& filename, const std::array<int, 2>& checkerBoardSize,
+                              const std::string& imgFolder, double resizeFactor = 1,
+                              arfs::Video cap = {}, bool needToTakePictures = false);
 
         void updateProjectionMatrix(const std::vector<cv::Point>& tagPoints);
 

@@ -53,7 +53,7 @@ namespace arfs
         std::vector<std::string> split_strings{};
         size_t pos;
         std::string token{};
-        while((pos = s.find('/')) != std::string::npos)
+        while((pos = s.find(delimiter)) != std::string::npos)
         {
             token = s.substr(0, pos);
             split_strings.emplace_back(token);
