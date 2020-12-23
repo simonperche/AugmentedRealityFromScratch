@@ -12,6 +12,11 @@ namespace arfs
         m_objects.emplace_back(arfs::OBJLoader::load(filename));
     }
 
+    void Scene::scale(double scale){
+        for(auto& object : m_objects)
+            object.scale(scale);
+    }
+
     void Scene::rotate(double xAngle, double yAngle, double zAngle)
     {
         for(auto& object : m_objects)

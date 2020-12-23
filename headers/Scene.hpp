@@ -19,6 +19,7 @@ namespace arfs
 
         void addObject(const std::string& filename);
         void rotate(double xAngle, double yAngle, double zAngle);
+        void scale(double scale);
 
         //TODO: Add scale, rotate and remove only one object
 

@@ -46,10 +46,6 @@ namespace arfs
         {
             for(auto& point : face.points)
             {
-                //TODO: move scaling in object class
-                //Scale
-                point *= 100;
-
                 //Center
                 point.x += int(tagProjectionSize / 2);
                 point.y += int(tagProjectionSize / 2);

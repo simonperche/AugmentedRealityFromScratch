@@ -13,6 +13,17 @@ namespace arfs
 
     }
 
+    void Object::scale(double scale)
+    {
+        for(auto& face : m_faces)
+        {
+            for(auto& point : face.points)
+            {
+                point *= scale;
+            }
+        }
+    }
+
     void Object::rotate(double xAngle, double yAngle, double zAngle)
     {
         auto rot_x = cv::Matx33d(1, 0, 0,

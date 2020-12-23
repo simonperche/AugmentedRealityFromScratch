@@ -22,6 +22,7 @@ namespace arfs
         Object();
         void addFace(std::vector<cv::Point3d> points, const cv::Vec3d& normal = cv::Vec3d(0,0,0));
         void rotate(double xAngle, double yAngle, double zAngle);
+        void scale(double scale);
 
         std::vector<Face> getFaces() const
         { return m_faces; }

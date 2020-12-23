@@ -31,6 +31,7 @@ int main()
     auto scene = arfs::Scene(camera);
     scene.addObject("../resources/monkey.obj");
     scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
+    scene.scale(100);
 
     cv::Mat frame;
     for(;;)
