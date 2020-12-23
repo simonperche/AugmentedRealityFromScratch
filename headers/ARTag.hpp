@@ -14,9 +14,9 @@ namespace arfs
     class ARTag
     {
     public:
-        ARTag(const std::string& filename);
+        explicit ARTag(const std::string& filename);
 
-        ARTag(cv::Mat img);
+        explicit ARTag(cv::Mat img);
 
         std::array<int, 64> getCode() const
         { return m_code; };

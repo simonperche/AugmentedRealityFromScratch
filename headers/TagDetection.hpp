@@ -14,7 +14,7 @@ namespace arfs
     class TagDetection
     {
     public:
-        TagDetection(const arfs::ARTag& tag, bool verbose = false) : m_tagToDetect(tag), m_verbose(verbose)
+        explicit TagDetection(const arfs::ARTag& tag, bool verbose = false) : m_tagToDetect(tag), m_verbose(verbose)
         {};
 
         std::vector<cv::Point> update(const cv::Mat& frame);
