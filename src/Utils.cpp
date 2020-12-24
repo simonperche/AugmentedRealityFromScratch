@@ -63,4 +63,112 @@ namespace arfs
 
         return split_strings;
     }
+
+    void Utils::estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints, cv::Mat matrix)
+    {
+        std::array<double, 72> data{double(-srcPoints[0].x), double(-srcPoints[0].y), -1.0, 0.0, 0.0, 0.0,
+                                    double(srcPoints[0].x) * double(dstPoints[0].x), double(srcPoints[0].y) * double(dstPoints[0].x),
+                                    double(-dstPoints[0].x),
+                                    0.0, 0.0, 0.0, double(-srcPoints[0].x), double(-srcPoints[0].y), -1.0,
+                                    double(srcPoints[0].x) * double(dstPoints[0].y), double(srcPoints[0].y) * double(dstPoints[0].y),
+                                    double(-dstPoints[0].y),
+                                    double(-srcPoints[1].x), double(-srcPoints[1].y), -1.0, 0.0, 0.0, 0.0,
+                                    double(srcPoints[1].x) * double(dstPoints[1].x), double(srcPoints[1].y) * double(dstPoints[1].x),
+                                    double(-dstPoints[1].x),
+                                    0.0, 0.0, 0.0, double(-srcPoints[1].x), double(-srcPoints[1].y), -1.0,
+                                    double(srcPoints[1].x) * double(dstPoints[1].y), double(srcPoints[1].y) * double(dstPoints[1].y),
+                                    double(-dstPoints[1].y),
+                                    double(-srcPoints[2].x), double(-srcPoints[2].y), -1.0, 0.0, 0.0, 0.0,
+                                    double(srcPoints[2].x) * double(dstPoints[2].x), double(srcPoints[2].y) * double(dstPoints[2].x),
+                                    double(-dstPoints[2].x),
+                                    0.0, 0.0, 0.0, double(-srcPoints[2].x), double(-srcPoints[2].y), -1.0,
+                                    double(srcPoints[2].x) * double(dstPoints[2].y), double(srcPoints[2].y) * double(dstPoints[2].y),
+                                    double(-dstPoints[2].y),
+                                    double(-srcPoints[3].x), double(-srcPoints[3].y), -1.0, 0.0, 0.0, 0.0,
+                                    double(srcPoints[3].x) * double(dstPoints[3].x), double(srcPoints[3].y) * double(dstPoints[3].x),
+                                    double(-dstPoints[3].x),
+                                    0.0, 0.0, 0.0, double(-srcPoints[3].x), double(-srcPoints[3].y), -1.0,
+                                    double(srcPoints[3].x) * double(dstPoints[3].y), double(srcPoints[3].y) * double(dstPoints[3].y),
+                                    double(-dstPoints[3].y),};
+
+        cv::Mat homographyMatrix = cv::Mat(8, 9, CV_64F, data.data());
+
+        gaussJordanElimination(homographyMatrix, 8, 9);
+
+        matrix.at<double>(0, 0) = homographyMatrix.at<double>(0, 8);
+        matrix.at<double>(0, 1) = homographyMatrix.at<double>(1, 8);
+        matrix.at<double>(0, 2) = homographyMatrix.at<double>(2, 8);
+        matrix.at<double>(1, 0) = homographyMatrix.at<double>(3, 8);
+        matrix.at<double>(1, 1) = homographyMatrix.at<double>(4, 8);
+        matrix.at<double>(1, 2) = homographyMatrix.at<double>(5, 8);
+        matrix.at<double>(2, 0) = homographyMatrix.at<double>(6, 8);
+        matrix.at<double>(2, 1) = homographyMatrix.at<double>(7, 8);
+        matrix.at<double>(2, 2) = 1;
+    }
+
+
+    void Utils::gaussJordanElimination(cv::Mat& matrix, int rows, int cols)
+    {
+        //Pivot initialization
+        int h = 0;
+        int k = 0;
+
+        while(h < rows && k < cols)
+        {
+            /* Find the k-th pivot */
+            int i_max = h;
+            for(int i = h + 1; i < rows; i++)
+            {
+                if(fabs(matrix.at<double>(i, k)) > fabs(matrix.at<double>(i_max, k)))
+                {
+                    i_max = i;
+                }
+            }
+            if(matrix.at<double>(i_max, k) == 0)
+            {
+                // No pivot, jump this column
+                k = k + 1;
+            }
+            else
+            {
+                if(i_max != h)
+                {
+                    for(int l = 0; l < cols; l++)
+                    {
+                        double save = matrix.at<double>(h, l);
+                        matrix.at<double>(h, l) = matrix.at<double>(i_max, l);
+                        matrix.at<double>(i_max, l) = save;
+                    }
+                }
+
+                double norm = matrix.at<double>(h, k);
+                for(int l = 0; l < cols; l++)
+                {
+                    matrix.at<double>(h, l) /= norm;
+                }
+
+                for(int i = h + 1; i < rows; i++)
+                {
+                    double f = matrix.at<double>(i, k) / matrix.at<double>(h, k);
+                    for(int j = k + 1; j < cols; j++)
+                    {
+                        matrix.at<double>(i, j) -= (matrix.at<double>(h, j)) * f;
+                    }
+                }
+
+                h = h + 1;
+                k = k + 1;
+            }
+
+        }
+
+        //Back substitution, to transform the matrix in row echelon form in a system
+        for(int i = rows - 2; i >= 0; i--)
+        {
+            for(int j = i + 1; j < cols - 1; j++)
+            {
+                matrix.at<double>(i, rows) -= matrix.at<double>(i, j) * matrix.at<double>(j, rows);
+            }
+        }
+    }
 }

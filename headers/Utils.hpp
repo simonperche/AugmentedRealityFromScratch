@@ -35,7 +35,24 @@ namespace arfs
 
         static std::vector<std::string> split(std::string s, const char& delimiter);
 
+        /**
+         * Estimate the homography matrix between two sets of four points
+         * @param srcPoints
+         * @param dstPoints
+         * @param matrix output matrix
+         */
+        static void estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints, cv::Mat matrix);
+
         static constexpr double PI = 3.141592653589793238463;
+
+    private:
+        /**
+         * Apply a gaussian elimination on a matrix
+         * @param matrix matrix to solve
+         * @param rows rows count on matrix
+         * @param cols cols count on matrix
+         */
+        static void gaussJordanElimination(cv::Mat &matrix, int rows, int cols);
     };
 }
 
