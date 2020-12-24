@@ -12,11 +12,19 @@ namespace arfs
     class Video
     {
     public:
+        Video()
+        {};
+
         explicit Video(const std::string& name, double xResize = 1, double yResize = 1);
+
         explicit Video(int camId, double xResize = 1, double yResize = 1);
+
         static bool escIsPressed();
+
         void restartFromBeginning();
+
         cv::Mat getNextFrame();
+
         cv::Mat getCurrentFrame();
 
     private:

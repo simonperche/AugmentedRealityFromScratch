@@ -20,6 +20,20 @@ namespace arfs
         else
         {
             auto candidate = m_tracking.update(frame);
+
+            bool enoughMovement = false;
+            for(int i = 0 ; i < candidate.size() ; ++i)
+            {
+                if(arfs::Utils::norm(candidate[i], m_tagCorners[i]) > m_minimumDistance)
+                {
+                    enoughMovement = true;
+                    break;
+                }
+            }
+
+            if(!enoughMovement)
+                candidate = m_tagCorners;
+
             if(candidate.empty() || !recognizeTag(frame, candidate))
                 fullDetection(frame);
             else if(m_verbose)

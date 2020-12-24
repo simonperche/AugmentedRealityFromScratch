@@ -26,6 +26,7 @@ namespace arfs
         std::vector<cv::Point> m_tagCorners{};
         arfs::Tracking m_tracking{};
         bool m_verbose;
+        static constexpr double m_minimumDistance{2};
 
         void fullDetection(const cv::Mat& frame);
 
