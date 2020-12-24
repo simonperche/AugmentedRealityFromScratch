@@ -34,4 +34,11 @@ namespace arfs
             }
         }
     }
+
+    std::ostream& operator<<(std::ostream& os, const ARTag& tag)
+    {
+        for(auto i : tag.m_code)
+            os << i << " ";
+        return os;
+    }
 }

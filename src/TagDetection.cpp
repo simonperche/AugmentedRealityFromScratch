@@ -166,8 +166,6 @@ namespace arfs
     {
         m_tagCorners.clear();
 
-        //TODO: remove the usage of homography and work directly on image (I suppose it could work)
-        cv::Mat candidate_mat(300, 300, CV_8UC3);
         auto dstPoints = std::vector<cv::Point>{cv::Point(0, 0),
                                                 cv::Point(300, 0),
                                                 cv::Point(300, 300),
@@ -182,8 +180,7 @@ namespace arfs
             cv::Mat homography = cv::findHomography(candidate, dstPoints);
             if(homography.empty()) continue;
 
-            cv::warpPerspective(frame, candidate_mat, homography, cv::Size(candidate_mat.cols, candidate_mat.rows));
-
+            cv::Mat candidate_mat = arfs::Utils::wrapPerspective(frame, cv::Size(300, 300), homography);
             cv::cvtColor(candidate_mat, candidate_mat, cv::COLOR_BGR2GRAY);
             cv::threshold(candidate_mat, candidate_mat, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
 

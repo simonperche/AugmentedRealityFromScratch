@@ -21,6 +21,8 @@ namespace arfs
         std::array<int, 64> getCode() const
         { return m_code; };
 
+        friend std::ostream& operator<<(std::ostream& os, const ARTag& tag);
+
     private:
         std::array<int, 64> m_code{};
         cv::Mat m_img;

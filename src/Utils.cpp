@@ -5,6 +5,7 @@
 #include <cmath>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
+#include <iostream>
 #include "../headers/Utils.hpp"
 
 namespace arfs
@@ -62,6 +63,34 @@ namespace arfs
         split_strings.emplace_back(s);
 
         return split_strings;
+    }
+
+    cv::Mat Utils::wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix)
+    {
+        auto dst = cv::Mat(size, CV_8UC3);
+        cv::Mat matrixInv = matrix.inv();
+        std::vector<cv::Mat> channels_src(3);
+        std::vector<cv::Mat> channels_dst(3);
+        cv::split(src, channels_src);
+        cv::split(dst, channels_dst);
+
+        for(int j = 0; j < dst.rows; ++j)
+        {
+            for(int i = 0; i < dst.cols; ++i)
+            {
+                int x = int((matrixInv.at<double>(0, 0) * j + matrixInv.at<double>(0, 1) * i + matrixInv.at<double>(0, 2))
+                        / (matrixInv.at<double>(2,0) * j + matrixInv.at<double>(2, 1) * i + matrixInv.at<double>(2, 2)));
+                int y = int((matrixInv.at<double>(1, 0) * j + matrixInv.at<double>(1, 1) * i + matrixInv.at<double>(1, 2))
+                        / (matrixInv.at<double>(2,0) * j + matrixInv.at<double>(2, 1) * i + matrixInv.at<double>(2, 2)));
+                channels_dst[0].at<unsigned char>(i, j) = channels_src[0].at<unsigned char>(y, x);
+                channels_dst[1].at<unsigned char>(i, j) = channels_src[1].at<unsigned char>(y, x);
+                channels_dst[2].at<unsigned char>(i, j) = channels_src[2].at<unsigned char>(y, x);
+            }
+        }
+
+        cv::merge(channels_dst, dst);
+
+        return dst;
     }
 
     void Utils::estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints, cv::Mat matrix)
