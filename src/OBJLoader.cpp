@@ -14,6 +14,7 @@ namespace arfs
 {
     arfs::Object OBJLoader::load(const std::string& filename)
     {
+        //TODO: add materials support
         std::ifstream file(filename);
         std::string line;
         std::vector<cv::Point3d> vertices;

@@ -37,9 +37,9 @@ namespace arfs
 
         /**
          * Estimate the homography matrix between two sets of four points
+         * @return homography 3x3 matrix
          * @param srcPoints
          * @param dstPoints
-         * @param matrix output matrix
          */
         static cv::Mat estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints);
 

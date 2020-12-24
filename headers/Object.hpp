@@ -23,6 +23,8 @@ namespace arfs
         void rotate(double xAngle, double yAngle, double zAngle);
         void scale(double scale);
 
+        //TODO: add translation
+
         std::vector<Face> getFaces() const
         { return m_faces; }
 

@@ -28,6 +28,7 @@ namespace arfs
 
         // Painter's algorithm
         //TODO: fix painter's algorithm when the camera is too close or too titled in relation to the tag
+        //TODO: fix painter's algorithm with multiples objects
         cv::Mat translation = (camera.getIntrinsicParameters().inv() * camera.getProjectionMatrix()).col(3);
         std::sort(faces.begin(), faces.end(), [&](const Face& a, const Face& b)
         {
