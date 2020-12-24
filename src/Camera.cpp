@@ -101,7 +101,6 @@ namespace arfs
         cv::Mat gray;
 
         std::vector<cv::Point2f> corner_pts;
-        bool success;
 
         for(auto& image : images)
         {
@@ -109,7 +108,7 @@ namespace arfs
             cv::resize(frame, frame, cv::Size(), resizeFactor, resizeFactor);
             cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-            success = cv::findChessboardCorners(gray, cv::Size(checkerBoardSize[0], checkerBoardSize[1]), corner_pts,
+            bool success = cv::findChessboardCorners(gray, cv::Size(checkerBoardSize[0], checkerBoardSize[1]), corner_pts,
                                                 cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK |
                                                 cv::CALIB_CB_NORMALIZE_IMAGE);
 
