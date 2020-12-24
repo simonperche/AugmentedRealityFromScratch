@@ -158,6 +158,110 @@ namespace arfs
         }
     }
 
+    /**
+     * Apply a gaussian elimination on a matrix
+     * @param matrix matrix to solve
+     * @param rows rows count on matrix
+     * @param cols cols count on matrix
+     */
+    void Camera::gaussJordanElimination(cv::Mat &matrix, int rows, int cols)
+    {
+        //Pivot initialization
+        int h = 0;
+        int k = 0;
+
+        while(h < rows && k < cols)
+        {
+            /* Find the k-th pivot */
+            int i_max = h;
+            for(int i = h+1; i < rows; i++)
+            {
+                if(fabs(matrix.at<double>(i, k)) > fabs(matrix.at<double>(i_max, k)))
+                {
+                    i_max = i;
+                }
+            }
+            if(matrix.at<double>(i_max, k) == 0)
+            {
+                // No pivot, jump this column
+                k = k+1;
+            }
+            else
+            {
+                if(i_max != h)
+                {
+                    for(int l = 0; l<cols; l++)
+                    {
+                        double save = matrix.at<double>(h, l);
+                        matrix.at<double>(h, l) = matrix.at<double>(i_max, l);
+                        matrix.at<double>(i_max, l) = save;
+                    }
+                }
+
+                double norm = matrix.at<double>(h, k);
+                for(int l = 0; l < cols; l++)
+                {
+                    matrix.at<double>(h, l) /= norm;
+                }
+
+                for(int i = h+1; i<rows; i++)
+                {
+                    double f = matrix.at<double>(i, k) / matrix.at<double>(h, k);
+                    for(int j = k+1; j<cols; j++)
+                    {
+                        matrix.at<double>(i, j) -= (matrix.at<double>(h, j)) * f;
+                    }
+                }
+
+                h = h+1;
+                k = k+1;
+            }
+
+        }
+
+        //Back substitution, to transform the matrix in row echelon form in a system
+        for(int i = rows-2; i >= 0; i--)
+        {
+            for(int j = i+1; j<cols-1; j++)
+            {
+                matrix.at<double>(i, rows) -= matrix.at<double>(i, j) * matrix.at<double>(j, rows);
+            }
+        }
+    }
+
+    /**
+     * Estimate the homography matrix between two sets of four points
+     * @param tagPoints
+     * @param dstPoints
+     * @param matrix output matrix
+     */
+    void Camera::estimateHomography(std::vector<cv::Point_<int>> tagPoints, std::vector<cv::Point_<int>> dstPoints, cv::Mat matrix)
+    {
+        double data[72] = {double(-tagPoints[0].x), double(-tagPoints[0].y), -1.0,   0.0,   0.0,  0.0, double(tagPoints[0].x) * double(dstPoints[0].x), double(tagPoints[0].y) * double(dstPoints[0].x), double(-dstPoints[0].x),
+                          0.0, 0.0,  0.0, double(-tagPoints[0].x), double(-tagPoints[0].y), -1.0, double(tagPoints[0].x) * double(dstPoints[0].y), double(tagPoints[0].y) * double(dstPoints[0].y), double(-dstPoints[0].y),
+                        double(-tagPoints[1].x), double(-tagPoints[1].y), -1.0,   0.0,   0.0,  0.0, double(tagPoints[1].x) * double(dstPoints[1].x), double(tagPoints[1].y) * double(dstPoints[1].x), double(-dstPoints[1].x),
+                          0.0,   0.0,  0.0, double(-tagPoints[1].x), double(-tagPoints[1].y), -1.0, double(tagPoints[1].x) * double(dstPoints[1].y), double(tagPoints[1].y) * double(dstPoints[1].y), double(-dstPoints[1].y),
+                        double(-tagPoints[2].x), double(-tagPoints[2].y), -1.0,   0.0,   0.0,  0.0, double(tagPoints[2].x) * double(dstPoints[2].x), double(tagPoints[2].y) * double(dstPoints[2].x), double(-dstPoints[2].x),
+                          0.0,   0.0,  0.0, double(-tagPoints[2].x), double(-tagPoints[2].y), -1.0, double(tagPoints[2].x) * double(dstPoints[2].y), double(tagPoints[2].y) * double(dstPoints[2].y), double(-dstPoints[2].y),
+                        double(-tagPoints[3].x), double(-tagPoints[3].y), -1.0,   0.0,   0.0,  0.0, double(tagPoints[3].x) * double(dstPoints[3].x), double(tagPoints[3].y) * double(dstPoints[3].x), double(-dstPoints[3].x),
+                          0.0,   0.0,  0.0, double(-tagPoints[3].x), double(-tagPoints[3].y), -1.0, double(tagPoints[3].x) * double(dstPoints[3].y), double(tagPoints[3].y) * double(dstPoints[3].y), double(-dstPoints[3].y), };
+
+        cv::Mat homographicMatrix = cv::Mat(8, 9, CV_64F, data);
+
+        gaussJordanElimination(homographicMatrix, 8,  9);
+
+        matrix.at<double>(0, 0) = homographicMatrix.at<double>(0, 8);
+        matrix.at<double>(0, 1) = homographicMatrix.at<double>(1, 8);
+        matrix.at<double>(0, 2) = homographicMatrix.at<double>(2, 8);
+        matrix.at<double>(1, 0) = homographicMatrix.at<double>(3, 8);
+        matrix.at<double>(1, 1) = homographicMatrix.at<double>(4, 8);
+        matrix.at<double>(1, 2) = homographicMatrix.at<double>(5, 8);
+        matrix.at<double>(2, 0) = homographicMatrix.at<double>(6, 8);
+        matrix.at<double>(2, 1) = homographicMatrix.at<double>(7, 8);
+        matrix.at<double>(2, 2) = 1;
+    }
+
+
     void Camera::updateProjectionMatrix(const std::vector<cv::Point>& tagPoints)
     {
         m_projectionMatrix = cv::Mat();
@@ -168,8 +272,10 @@ namespace arfs
                                                 cv::Point(m_tagProjectionSize, m_tagProjectionSize),
                                                 cv::Point(0, m_tagProjectionSize)};
 
-        //TODO: recode cv::findHomography to improve "from scratch" credo
-        cv::Mat homography_inv = cv::findHomography(tagPoints, dstPoints).inv();
+
+        cv::Mat homography_inv = cv::Mat(3, 3, CV_64F);
+        estimateHomography(tagPoints, dstPoints, homography_inv);
+        homography_inv = homography_inv.inv();
 
         if(homography_inv.empty()) return;
 

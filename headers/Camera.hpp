@@ -38,6 +38,9 @@ namespace arfs
         const int m_tagProjectionSize{300};
 
         void saveParametersToFile(const std::string& filename);
+
+        void estimateHomography(std::vector<cv::Point_<int>> tagPoints, std::vector<cv::Point_<int>> dstPoints, cv::Mat matrix);
+        void gaussJordanElimination(cv::Mat &matrix, int rows, int cols);
     };
 }
 
