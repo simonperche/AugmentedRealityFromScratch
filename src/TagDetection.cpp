@@ -177,7 +177,7 @@ namespace arfs
         for(int rotation = 0; rotation < 4; rotation++)
         {
             std::rotate(candidate.begin(), candidate.begin() + 1, candidate.end());
-            cv::Mat homography = cv::findHomography(candidate, dstPoints);
+            cv::Mat homography = arfs::Utils::estimateHomography(candidate, dstPoints);
             if(homography.empty()) continue;
 
             cv::Mat candidate_mat = arfs::Utils::wrapPerspective(frame, cv::Size(300, 300), homography);
