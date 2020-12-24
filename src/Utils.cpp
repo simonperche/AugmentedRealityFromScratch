@@ -93,8 +93,9 @@ namespace arfs
         return dst;
     }
 
-    void Utils::estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints, cv::Mat matrix)
+    cv::Mat Utils::estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints)
     {
+        cv::Mat matrix = cv::Mat(3, 3, CV_64F);
         std::array<double, 72> data{double(-srcPoints[0].x), double(-srcPoints[0].y), -1.0, 0.0, 0.0, 0.0,
                                     double(srcPoints[0].x) * double(dstPoints[0].x), double(srcPoints[0].y) * double(dstPoints[0].x),
                                     double(-dstPoints[0].x),
@@ -133,6 +134,8 @@ namespace arfs
         matrix.at<double>(2, 0) = homographyMatrix.at<double>(6, 8);
         matrix.at<double>(2, 1) = homographyMatrix.at<double>(7, 8);
         matrix.at<double>(2, 2) = 1;
+
+        return matrix;
     }
 
 

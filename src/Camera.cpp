@@ -168,9 +168,7 @@ namespace arfs
                                                 cv::Point(0, m_tagProjectionSize)};
 
 
-        cv::Mat homography_inv = cv::Mat(3, 3, CV_64F);
-        arfs::Utils::estimateHomography(tagPoints, dstPoints, homography_inv);
-        homography_inv = homography_inv.inv();
+        cv::Mat homography_inv = arfs::Utils::estimateHomography(tagPoints, dstPoints).inv();
 
         if(homography_inv.empty()) return;
 

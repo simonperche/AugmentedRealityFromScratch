@@ -41,7 +41,7 @@ namespace arfs
          * @param dstPoints
          * @param matrix output matrix
          */
-        static void estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints, cv::Mat matrix);
+        static cv::Mat estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints);
 
         static cv::Mat wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix);
 
