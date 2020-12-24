@@ -164,7 +164,7 @@ namespace arfs
      * @param rows rows count on matrix
      * @param cols cols count on matrix
      */
-    void gaussJordanElimination(cv::Mat &matrix, int rows, int cols)
+    void Camera::gaussJordanElimination(cv::Mat &matrix, int rows, int cols)
     {
         //Pivot initialization
         int h = 0;
@@ -235,7 +235,7 @@ namespace arfs
      * @param dstPoints
      * @param matrix output matrix
      */
-    void estimateHomography(std::vector<cv::Point_<int>> tagPoints, std::vector<cv::Point_<int>> dstPoints, cv::Mat matrix)
+    void Camera::estimateHomography(std::vector<cv::Point_<int>> tagPoints, std::vector<cv::Point_<int>> dstPoints, cv::Mat matrix)
     {
         double data[72] = {double(-tagPoints[0].x), double(-tagPoints[0].y), -1.0,   0.0,   0.0,  0.0, double(tagPoints[0].x) * double(dstPoints[0].x), double(tagPoints[0].y) * double(dstPoints[0].x), double(-dstPoints[0].x),
                           0.0, 0.0,  0.0, double(-tagPoints[0].x), double(-tagPoints[0].y), -1.0, double(tagPoints[0].x) * double(dstPoints[0].y), double(tagPoints[0].y) * double(dstPoints[0].y), double(-dstPoints[0].y),
