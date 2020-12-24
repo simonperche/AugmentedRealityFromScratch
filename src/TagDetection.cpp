@@ -58,6 +58,7 @@ namespace arfs
 
     std::vector<std::vector<cv::Point>> TagDetection::extractTagCandidates(const cv::Mat& frame)
     {
+        //TODO: maybe rewrite cv::findContours, cv::convexHull and cv::adaptiveThreshold
         std::vector<std::vector<cv::Point>> candidates{};
 
         cv::Mat thresh;
@@ -163,6 +164,7 @@ namespace arfs
 
     bool TagDetection::recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate)
     {
+        //TODO: maybe rewrite threshold
         m_tagCorners.clear();
 
         auto dstPoints = std::vector<cv::Point>{cv::Point(0, 0),
