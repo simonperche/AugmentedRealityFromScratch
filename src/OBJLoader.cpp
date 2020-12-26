@@ -15,7 +15,6 @@ namespace arfs
 {
     arfs::Object OBJLoader::load(const std::string& objFilename, const std::string& mtlFilename)
     {
-        //TODO: add materials support
         std::ifstream file(objFilename);
         std::string line;
         std::vector<cv::Point3d> vertices;
@@ -107,7 +106,6 @@ namespace arfs
 
                     if(faces_split.size() != 3) continue;
 
-                    //TODO: in some cases, id texture could be empty in obj file (id//idnormal)
                     try
                     {
                         int id = std::stoi(faces_split[0]) - 1;

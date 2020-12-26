@@ -5,7 +5,6 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <iostream>
-#include <numeric>
 #include "../headers/exceptions.hpp"
 #include "../headers/Renderer.hpp"
 #include "../headers/Utils.hpp"
@@ -61,32 +60,7 @@ namespace arfs
             auto angle = arfs::Utils::angleBetween(face.normal, light, arfs::AngleType::DEG);
             auto lightValue = angle / 180;
 
-            // Get material color
-
             cv::fillConvexPoly(frame, scene_points, face.color*lightValue);
-            
-//            auto sceneRect = cv::boundingRect(scene_points);
-//            auto textureRect = cv::boundingRect(face.textureCoordinate);
-//            auto frameCropped = frame.clone()(sceneRect);
-//            std::vector<cv::Point2i> scenePointsCropped{}, texturePointsCropped{};
-//
-//            for(int i = 0 ; i < scene_points.size() ; ++i)
-//            {
-//                scenePointsCropped.emplace_back(cv::Point2i(scene_points[i].x - sceneRect.x, scene_points[i].y - sceneRect.y));
-//                texturePointsCropped.emplace_back(cv::Point2i(face.textureCoordinate[i].x - textureRect.x, face.textureCoordinate[i].y - textureRect.y));
-//            }
-//
-//            auto homography = arfs::Utils::estimateHomography(scenePointsCropped, texturePointsCropped);
-//            auto wrapTexture = arfs::Utils::wrapPerspective(object.getTexture().clone()(textureRect), frameCropped.size(), homography);
-//
-//            cv::Mat mask = cv::Mat::zeros(frameCropped.size(), CV_32FC3);
-//            cv::fillConvexPoly(mask, scenePointsCropped, cv::Scalar(1,1,1));
-//            cv::multiply(wrapTexture, mask, wrapTexture, 1, CV_8UC3);
-//            cv::multiply(frameCropped, (cv::Scalar(1,1,1) - mask), frameCropped, 1, CV_8UC3);
-//
-//            frame(sceneRect) = frameCropped + wrapTexture;
-
-//            cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue, lightValue, lightValue));
         }
     }
 
