@@ -111,13 +111,15 @@ namespace arfs
                     try
                     {
                         int id = std::stoi(faces_split[0]) - 1;
-                        int idTexture = std::stoi(faces_split[1]) - 1;
                         int idNormal = std::stoi(faces_split[2]) - 1;
                         points.emplace_back(vertices[id]);
                         sumNormals += normals[idNormal];
 
-                        if(!textures.empty())
+                        if(!faces_split[1].empty() && !textures.empty())
+                        {
+                            int idTexture = std::stoi(faces_split[1]) - 1;
                             textureCoordinate.emplace_back(textures[idTexture]);
+                        }
                     }
                     catch(const std::exception& e)
                     {

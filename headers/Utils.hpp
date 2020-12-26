@@ -17,6 +17,7 @@ namespace arfs
 
     class Utils
     {
+        //TODO: reorganize by categories in subnamespace
     public:
         static double angleBetween(const cv::Point& v1, const cv::Point& v2, AngleType type = AngleType::RAD);
         static double angleBetween(const cv::Vec3d& v1, const cv::Vec3d& v2, AngleType type = AngleType::RAD);
