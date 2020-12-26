@@ -77,7 +77,7 @@ namespace arfs
                     continue;
                 }
             }
-            else if(line_split[0] == "vt") // Texture coordinates
+            else if(line_split[0] == "vt" && !object.getTexture().empty()) // Texture coordinates
             {
                 if(object.getTexture().empty()) continue;
 
@@ -114,8 +114,10 @@ namespace arfs
                         int idTexture = std::stoi(faces_split[1]) - 1;
                         int idNormal = std::stoi(faces_split[2]) - 1;
                         points.emplace_back(vertices[id]);
-                        textureCoordinate.emplace_back(textures[idTexture]);
                         sumNormals += normals[idNormal];
+
+                        if(!textures.empty())
+                            textureCoordinate.emplace_back(textures[idTexture]);
                     }
                     catch(const std::exception& e)
                     {

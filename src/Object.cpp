@@ -44,13 +44,24 @@ namespace arfs
 
     void Object::addFace(const std::vector<cv::Point3d>& points, const std::vector<cv::Point2i>& textureCoordinate, const cv::Vec3d& normal)
     {
-        auto centerTextureCoordinate = std::accumulate(textureCoordinate.begin(), textureCoordinate.end(), cv::Point2i{}) / double(textureCoordinate.size());
-        std::vector<cv::Mat> channels(3);
-        cv::split(m_texture, channels);
-        auto b = channels[0].at<unsigned char>(centerTextureCoordinate);
-        auto g = channels[1].at<unsigned char>(centerTextureCoordinate);
-        auto r = channels[2].at<unsigned char>(centerTextureCoordinate);
-        m_faces.emplace_back(Face{points, cv::Scalar(b,g,r), normal});
+        cv::Scalar color;
+        if(m_texture.empty())
+        {
+            // 180 because it looks better
+            color = cv::Scalar(180,180,180);
+        }
+        else
+        {
+            auto centerTextureCoordinate = std::accumulate(textureCoordinate.begin(), textureCoordinate.end(), cv::Point2i{}) / double(textureCoordinate.size());
+            std::vector<cv::Mat> channels(3);
+            cv::split(m_texture, channels);
+            auto b = channels[0].at<unsigned char>(centerTextureCoordinate);
+            auto g = channels[1].at<unsigned char>(centerTextureCoordinate);
+            auto r = channels[2].at<unsigned char>(centerTextureCoordinate);
+            color = cv::Scalar(b,g,r);
+        }
+
+        m_faces.emplace_back(Face{points, color, normal});
     }
 
     void Object::setTextureImage(const std::string& filename)
