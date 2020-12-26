@@ -18,6 +18,7 @@ namespace arfs
         std::ifstream file(objFilename);
         std::string line;
         std::vector<cv::Point3d> vertices;
+        std::vector<cv::Point2d> textures;
         std::vector<cv::Vec3d> normals;
 
         arfs::Object object{};
@@ -32,6 +33,8 @@ namespace arfs
                 line_split.push_back(s);
 
             if(line_split.empty()) continue;
+
+            //TODO: change catch by throwing an ill-formed exception
 
             if(line_split[0] == "v" || line_split[0] == "vn") // Vertices or normals
             {
@@ -51,6 +54,21 @@ namespace arfs
                     continue;
                 }
             }
+            else if(line_split[0] == "vt") // Texture coordinates
+            {
+                try
+                {
+                    // Do not handle 3D texture
+                    double x = std::stod(line_split[1]);
+                    double y = std::stod(line_split[2]);
+                    textures.emplace_back(cv::Point2d(x,y));
+                }
+                catch(const std::exception& e)
+                {
+                    std::cout << e.what() << std::endl;
+                    continue;
+                }
+            }
             else if(line_split[0] == "f") // Faces
             {
                 std::vector<arfs::ObjectPoint> face{};
@@ -63,11 +81,13 @@ namespace arfs
 
                     if(faces_split.size() != 3) continue;
 
+                    //TODO: in some cases, id texture could be empty in obj file (id//idnormal)
                     try
                     {
                         int id = std::stoi(faces_split[0]) - 1;
+                        int idTexture = std::stoi(faces_split[1]) - 1;
                         int idNormal = std::stoi(faces_split[2]) - 1;
-                        face.emplace_back(arfs::ObjectPoint{vertices[id]});
+                        face.emplace_back(arfs::ObjectPoint{vertices[id], textures[idTexture]});
                         sumNormals += normals[idNormal];
                     }
                     catch(const std::exception& e)
