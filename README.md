@@ -13,10 +13,10 @@ An augmented reality application from scratch using OpenCV for learning purpose.
 | Project 3D objects                       | Done         |
 | Add normals support                      | Done         |
 | Add camera calibration                   | Done         |
+| Add materials support (only flat color)  | To do        |
 |                                          |              |
 | Stabilize detected tag                   | In dev       |
 |                                          |              |
-| Add materials support                    | To do        |
 | Improve the robustness of tag detection  | To do        |
 
 
