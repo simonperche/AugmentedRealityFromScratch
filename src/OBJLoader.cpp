@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
 #include "../headers/OBJLoader.hpp"
 #include "../headers/Utils.hpp"
 
@@ -84,7 +85,7 @@ namespace arfs
                 {
                     // Do not handle 1D or 3D texture
                     int x = int(std::stod(line_split[1]) * object.getTexture().cols);
-                    int y = int(std::stod(line_split[2]) * object.getTexture().rows);
+                    int y = int((1-std::stod(line_split[2])) * object.getTexture().rows);
                     textures.emplace_back(cv::Point2i(x,y));
                 }
                 catch(const std::exception& e)
