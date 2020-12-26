@@ -59,11 +59,12 @@ namespace arfs
             //Flat shading
             auto light = cv::Vec3d(-1, 1, -1);
             auto angle = arfs::Utils::angleBetween(face.normal, light, arfs::AngleType::DEG);
-            auto lightValue = (angle * 255) / 180;
+            auto lightValue = angle / 180;
 
             // Get material color
 
-            cv::fillConvexPoly(frame, scene_points, face.color);
+            cv::fillConvexPoly(frame, scene_points, face.color*lightValue);
+            
 //            auto sceneRect = cv::boundingRect(scene_points);
 //            auto textureRect = cv::boundingRect(face.textureCoordinate);
 //            auto frameCropped = frame.clone()(sceneRect);
@@ -84,7 +85,7 @@ namespace arfs
 //            cv::multiply(frameCropped, (cv::Scalar(1,1,1) - mask), frameCropped, 1, CV_8UC3);
 //
 //            frame(sceneRect) = frameCropped + wrapTexture;
-//
+
 //            cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue, lightValue, lightValue));
         }
     }
