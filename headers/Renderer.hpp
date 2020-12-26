@@ -13,11 +13,11 @@ namespace arfs
     class Renderer
     {
     public:
-        static void render(const cv::Mat& frame, const arfs::Scene& scene);
+        static void render(cv::Mat& frame, const arfs::Scene& scene);
         static void drawPolygon(const cv::Mat& frame, const std::vector<cv::Point>& points);
 
     private:
-        static void augmentObject(const cv::Mat& frame, const arfs::Object& object, const arfs::Camera& camera);
+        static void augmentObject(cv::Mat& frame, const arfs::Object& object, const arfs::Camera& camera);
         static std::vector<cv::Point2i> projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix);
     };
 }
