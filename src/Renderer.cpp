@@ -4,13 +4,15 @@
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include <iostream>
+#include <numeric>
 #include "../headers/exceptions.hpp"
 #include "../headers/Renderer.hpp"
 #include "../headers/Utils.hpp"
 
 namespace arfs
 {
-    void Renderer::render(const cv::Mat& frame, const arfs::Scene& scene)
+    void Renderer::render(cv::Mat& frame, const arfs::Scene& scene)
     {
         if(scene.getCamera().getProjectionMatrix().empty())
             throw arfs::exceptions::EmptyProjectionMatrix();
@@ -21,7 +23,7 @@ namespace arfs
         }
     }
 
-    void Renderer::augmentObject(const cv::Mat& frame, const Object& object, const arfs::Camera& camera)
+    void Renderer::augmentObject(cv::Mat& frame, const Object& object, const arfs::Camera& camera)
     {
         auto faces = object.getFaces();
         auto tagProjectionSize = camera.getTagProjectionSize();
@@ -35,9 +37,9 @@ namespace arfs
             auto a_mean = cv::Point3d(0, 0, 0);
             auto b_mean = cv::Point3d(0, 0, 0);
             for(const auto& point : a.points)
-                a_mean += point.coordinate;
+                a_mean += point;
             for(const auto& point : b.points)
-                b_mean += point.coordinate;
+                b_mean += point;
             a_mean /= (double) a.points.size();
             b_mean /= (double) b.points.size();
             return cv::norm(cv::Point3d(translation) - a_mean) < cv::norm(cv::Point3d(translation) - b_mean);
@@ -48,8 +50,8 @@ namespace arfs
             for(auto& point : face.points)
             {
                 //Center
-                point.coordinate.x += int(tagProjectionSize / 2);
-                point.coordinate.y += int(tagProjectionSize / 2);
+                point.x += int(tagProjectionSize / 2);
+                point.y += int(tagProjectionSize / 2);
             }
             auto scene_points = projectPoint(face.points, camera.getProjectionMatrix());
 
@@ -60,22 +62,48 @@ namespace arfs
             auto lightValue = (angle * 255) / 180;
 
             // Get material color
-
-
-            cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue, lightValue, lightValue));
+            auto centerTextureCoordinate = std::accumulate(face.textureCoordinate.begin(), face.textureCoordinate.end(), cv::Point2i{}) / double(face.textureCoordinate.size());
+            std::vector<cv::Mat> channels(3);
+            cv::split(object.getTexture(), channels);
+            auto b = channels[0].at<unsigned char>(centerTextureCoordinate);
+            auto g = channels[1].at<unsigned char>(centerTextureCoordinate);
+            auto r = channels[2].at<unsigned char>(centerTextureCoordinate);
+            cv::fillConvexPoly(frame, scene_points, cv::Scalar(b, g, r));
+//            auto sceneRect = cv::boundingRect(scene_points);
+//            auto textureRect = cv::boundingRect(face.textureCoordinate);
+//            auto frameCropped = frame.clone()(sceneRect);
+//            std::vector<cv::Point2i> scenePointsCropped{}, texturePointsCropped{};
+//
+//            for(int i = 0 ; i < scene_points.size() ; ++i)
+//            {
+//                scenePointsCropped.emplace_back(cv::Point2i(scene_points[i].x - sceneRect.x, scene_points[i].y - sceneRect.y));
+//                texturePointsCropped.emplace_back(cv::Point2i(face.textureCoordinate[i].x - textureRect.x, face.textureCoordinate[i].y - textureRect.y));
+//            }
+//
+//            auto homography = arfs::Utils::estimateHomography(scenePointsCropped, texturePointsCropped);
+//            auto wrapTexture = arfs::Utils::wrapPerspective(object.getTexture().clone()(textureRect), frameCropped.size(), homography);
+//
+//            cv::Mat mask = cv::Mat::zeros(frameCropped.size(), CV_32FC3);
+//            cv::fillConvexPoly(mask, scenePointsCropped, cv::Scalar(1,1,1));
+//            cv::multiply(wrapTexture, mask, wrapTexture, 1, CV_8UC3);
+//            cv::multiply(frameCropped, (cv::Scalar(1,1,1) - mask), frameCropped, 1, CV_8UC3);
+//
+//            frame(sceneRect) = frameCropped + wrapTexture;
+//
+//            cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue, lightValue, lightValue));
         }
     }
 
-    std::vector<cv::Point2i> Renderer::projectPoint(const std::vector<arfs::ObjectPoint>& points, const cv::Mat& projectionMatrix)
+    std::vector<cv::Point2i> Renderer::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)
     {
         std::vector<cv::Point2i> scene_points(points.size());
         for(int i = 0; i < points.size(); i++)
         {
             cv::Mat_<double> src(4, 1);
 
-            src(0, 0) = points[i].coordinate.x;
-            src(1, 0) = points[i].coordinate.y;
-            src(2, 0) = points[i].coordinate.z;
+            src(0, 0) = points[i].x;
+            src(1, 0) = points[i].y;
+            src(2, 0) = points[i].z;
             src(3, 0) = 1;
             cv::Mat tmp = projectionMatrix * src;
             tmp /= tmp.at<double>(2, 0);

@@ -10,22 +10,17 @@
 
 namespace arfs
 {
-    struct ObjectPoint
-    {
-        cv::Point3d coordinate;
-        cv::Point2d textureCoordinate{};
-    };
-
     struct Face
     {
-        std::vector<ObjectPoint> points;
+        std::vector<cv::Point3d> points;
+        std::vector<cv::Point2i> textureCoordinate{};
         cv::Vec3d normal;
     };
 
     class Object
     {
     public:
-        void addFace(std::vector<ObjectPoint> points, const cv::Vec3d& normal = cv::Vec3d(0,0,0));
+        void addFace(const std::vector<cv::Point3d>& points, const std::vector<cv::Point2i>& textureCoordinate, const cv::Vec3d& normal = cv::Vec3d(0,0,0));
         void setTextureImage(const std::string& filename);
         void rotate(double xAngle, double yAngle, double zAngle);
         void scale(double scale);
@@ -34,6 +29,9 @@ namespace arfs
 
         std::vector<Face> getFaces() const
         { return m_faces; }
+
+        cv::Mat getTexture() const
+        { return m_texture; }
 
     private:
         std::vector<Face> m_faces{};

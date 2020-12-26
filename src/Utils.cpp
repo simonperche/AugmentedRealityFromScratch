@@ -75,14 +75,16 @@ namespace arfs
         cv::split(src, channels_src);
         cv::split(dst, channels_dst);
 
-        for(int j = 0; j < dst.rows; ++j)
+        for(int i = 0; i < dst.rows; ++i)
         {
-            for(int i = 0; i < dst.cols; ++i)
+            for(int j = 0; j < dst.cols; ++j)
             {
                 int x = int((matrixInv.at<double>(0, 0) * j + matrixInv.at<double>(0, 1) * i + matrixInv.at<double>(0, 2))
                         / (matrixInv.at<double>(2,0) * j + matrixInv.at<double>(2, 1) * i + matrixInv.at<double>(2, 2)));
                 int y = int((matrixInv.at<double>(1, 0) * j + matrixInv.at<double>(1, 1) * i + matrixInv.at<double>(1, 2))
                         / (matrixInv.at<double>(2,0) * j + matrixInv.at<double>(2, 1) * i + matrixInv.at<double>(2, 2)));
+
+                if(x < 0 || x >= src.rows || y < 0 || y >= src.cols) continue;
                 channels_dst[0].at<unsigned char>(i, j) = channels_src[0].at<unsigned char>(y, x);
                 channels_dst[1].at<unsigned char>(i, j) = channels_src[1].at<unsigned char>(y, x);
                 channels_dst[2].at<unsigned char>(i, j) = channels_src[2].at<unsigned char>(y, x);

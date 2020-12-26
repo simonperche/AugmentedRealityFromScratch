@@ -18,10 +18,30 @@ namespace arfs
         std::ifstream file(objFilename);
         std::string line;
         std::vector<cv::Point3d> vertices;
-        std::vector<cv::Point2d> textures;
+        std::vector<cv::Point2i> textures;
         std::vector<cv::Vec3d> normals;
 
         arfs::Object object{};
+
+        // .mtl
+        if(!mtlFilename.empty())
+        {
+            std::ifstream fileMTL(mtlFilename);
+            while(std::getline(fileMTL, line))
+            {
+                auto split = arfs::Utils::split(line, ' ');
+
+                if(split.size() != 2) continue;
+
+                if(split[0] == "map_Kd")
+                {
+                    auto found = mtlFilename.find_last_of('/');
+                    auto name = mtlFilename.substr(0, found) + '/' + split[1];
+                    object.setTextureImage(name);
+                    break;
+                }
+            }
+        }
 
         // .obj
         while(std::getline(file, line))
@@ -58,12 +78,14 @@ namespace arfs
             }
             else if(line_split[0] == "vt") // Texture coordinates
             {
+                if(object.getTexture().empty()) continue;
+
                 try
                 {
-                    // Do not handle 3D texture
-                    double x = std::stod(line_split[1]);
-                    double y = std::stod(line_split[2]);
-                    textures.emplace_back(cv::Point2d(x,y));
+                    // Do not handle 1D or 3D texture
+                    int x = int(std::stod(line_split[1]) * object.getTexture().cols);
+                    int y = int(std::stod(line_split[2]) * object.getTexture().rows);
+                    textures.emplace_back(cv::Point2i(x,y));
                 }
                 catch(const std::exception& e)
                 {
@@ -73,7 +95,8 @@ namespace arfs
             }
             else if(line_split[0] == "f") // Faces
             {
-                std::vector<arfs::ObjectPoint> face{};
+                std::vector<cv::Point3d> points{};
+                std::vector<cv::Point2i> textureCoordinate{};
                 // Need the mean of normals to compute face normal
                 auto sumNormals = cv::Vec3d(0,0,0);
 
@@ -89,7 +112,8 @@ namespace arfs
                         int id = std::stoi(faces_split[0]) - 1;
                         int idTexture = std::stoi(faces_split[1]) - 1;
                         int idNormal = std::stoi(faces_split[2]) - 1;
-                        face.emplace_back(arfs::ObjectPoint{vertices[id], textures[idTexture]});
+                        points.emplace_back(vertices[id]);
+                        textureCoordinate.emplace_back(textures[idTexture]);
                         sumNormals += normals[idNormal];
                     }
                     catch(const std::exception& e)
@@ -99,26 +123,7 @@ namespace arfs
                     }
                 }
 
-                object.addFace(face, sumNormals/(double)face.size());
-            }
-        }
-
-        if(!mtlFilename.empty())
-        {
-            std::ifstream fileMTL(mtlFilename);
-            while(std::getline(fileMTL, line))
-            {
-                auto split = arfs::Utils::split(line, ' ');
-
-                if(split.size() != 2) continue;
-
-                if(split[0] == "map_Kd")
-                {
-                    auto found = mtlFilename.find_last_of('/');
-                    auto name = mtlFilename.substr(0, found) + '/' + split[1];
-                    object.setTextureImage(name);
-                    break;
-                }
+                object.addFace(points, textureCoordinate, sumNormals / (double)points.size());
             }
         }
 
