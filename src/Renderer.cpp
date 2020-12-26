@@ -35,9 +35,9 @@ namespace arfs
             auto a_mean = cv::Point3d(0, 0, 0);
             auto b_mean = cv::Point3d(0, 0, 0);
             for(const auto& point : a.points)
-                a_mean += point;
+                a_mean += point.coordinate;
             for(const auto& point : b.points)
-                b_mean += point;
+                b_mean += point.coordinate;
             a_mean /= (double) a.points.size();
             b_mean /= (double) b.points.size();
             return cv::norm(cv::Point3d(translation) - a_mean) < cv::norm(cv::Point3d(translation) - b_mean);
@@ -48,8 +48,8 @@ namespace arfs
             for(auto& point : face.points)
             {
                 //Center
-                point.x += int(tagProjectionSize / 2);
-                point.y += int(tagProjectionSize / 2);
+                point.coordinate.x += int(tagProjectionSize / 2);
+                point.coordinate.y += int(tagProjectionSize / 2);
             }
             auto scene_points = projectPoint(face.points, camera.getProjectionMatrix());
 
@@ -62,16 +62,16 @@ namespace arfs
         }
     }
 
-    std::vector<cv::Point2i> Renderer::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)
+    std::vector<cv::Point2i> Renderer::projectPoint(const std::vector<arfs::ObjectPoint>& points, const cv::Mat& projectionMatrix)
     {
         std::vector<cv::Point2i> scene_points(points.size());
         for(int i = 0; i < points.size(); i++)
         {
             cv::Mat_<double> src(4, 1);
 
-            src(0, 0) = points[i].x;
-            src(1, 0) = points[i].y;
-            src(2, 0) = points[i].z;
+            src(0, 0) = points[i].coordinate.x;
+            src(1, 0) = points[i].coordinate.y;
+            src(2, 0) = points[i].coordinate.z;
             src(3, 0) = 1;
             cv::Mat tmp = projectionMatrix * src;
             tmp /= tmp.at<double>(2, 0);

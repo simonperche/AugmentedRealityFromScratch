@@ -14,7 +14,7 @@ namespace arfs
         {
             for(auto& point : face.points)
             {
-                point *= scale;
+                point.coordinate *= scale;
             }
         }
     }
@@ -35,12 +35,12 @@ namespace arfs
         {
             for(auto& point : face.points)
             {
-                point = rot * point;
+                point.coordinate = rot * point.coordinate;
             }
         }
     }
 
-    void Object::addFace(std::vector<cv::Point3d> points, const cv::Vec3d& normal)
+    void Object::addFace(std::vector<ObjectPoint> points, const cv::Vec3d& normal)
     {
         m_faces.emplace_back(Face{std::move(points), normal});
     }

@@ -12,10 +12,10 @@
 
 namespace arfs
 {
-    arfs::Object OBJLoader::load(const std::string& filename)
+    arfs::Object OBJLoader::load(const std::string& objFilename, const std::string& mtlFilename)
     {
         //TODO: add materials support
-        std::ifstream file(filename);
+        std::ifstream file(objFilename);
         std::string line;
         std::vector<cv::Point3d> vertices;
         std::vector<cv::Vec3d> normals;
@@ -53,7 +53,7 @@ namespace arfs
             }
             else if(line_split[0] == "f") // Faces
             {
-                std::vector<cv::Point3d> face{};
+                std::vector<arfs::ObjectPoint> face{};
                 // Need the mean of normals to compute face normal
                 auto sumNormals = cv::Vec3d(0,0,0);
 
@@ -67,7 +67,7 @@ namespace arfs
                     {
                         int id = std::stoi(faces_split[0]) - 1;
                         int idNormal = std::stoi(faces_split[2]) - 1;
-                        face.emplace_back(vertices[id]);
+                        face.emplace_back(arfs::ObjectPoint{vertices[id]});
                         sumNormals += normals[idNormal];
                     }
                     catch(const std::exception& e)

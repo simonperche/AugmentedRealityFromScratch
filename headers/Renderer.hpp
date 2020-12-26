@@ -18,7 +18,7 @@ namespace arfs
 
     private:
         static void augmentObject(const cv::Mat& frame, const arfs::Object& object, const arfs::Camera& camera);
-        static std::vector<cv::Point2i> projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix);
+        static std::vector<cv::Point2i> projectPoint(const std::vector<arfs::ObjectPoint>& points, const cv::Mat& projectionMatrix);
     };
 }
 

@@ -14,7 +14,7 @@ namespace arfs
     class OBJLoader
     {
     public:
-        static arfs::Object load(const std::string& filename);
+        static arfs::Object load(const std::string& objFilename, const std::string& mtlFilename = {});
     };
 }
 
