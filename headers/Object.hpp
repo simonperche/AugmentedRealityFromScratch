@@ -13,7 +13,7 @@ namespace arfs
     struct Face
     {
         std::vector<cv::Point3d> points;
-        std::vector<cv::Point2i> textureCoordinate{};
+        cv::Scalar color;
         cv::Vec3d normal;
     };
 

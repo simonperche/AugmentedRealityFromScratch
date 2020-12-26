@@ -62,13 +62,8 @@ namespace arfs
             auto lightValue = (angle * 255) / 180;
 
             // Get material color
-            auto centerTextureCoordinate = std::accumulate(face.textureCoordinate.begin(), face.textureCoordinate.end(), cv::Point2i{}) / double(face.textureCoordinate.size());
-            std::vector<cv::Mat> channels(3);
-            cv::split(object.getTexture(), channels);
-            auto b = channels[0].at<unsigned char>(centerTextureCoordinate);
-            auto g = channels[1].at<unsigned char>(centerTextureCoordinate);
-            auto r = channels[2].at<unsigned char>(centerTextureCoordinate);
-            cv::fillConvexPoly(frame, scene_points, cv::Scalar(b, g, r));
+
+            cv::fillConvexPoly(frame, scene_points, face.color);
 //            auto sceneRect = cv::boundingRect(scene_points);
 //            auto textureRect = cv::boundingRect(face.textureCoordinate);
 //            auto frameCropped = frame.clone()(sceneRect);
