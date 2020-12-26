@@ -17,7 +17,7 @@ namespace arfs
         explicit Scene(const arfs::Camera& camera) : m_camera(camera)
         {};
 
-        void addObject(const std::string& filename);
+        void addObject(const std::string& objFilename, const std::string& mtlFilename = {});
         void rotate(double xAngle, double yAngle, double zAngle);
         void scale(double scale);
 

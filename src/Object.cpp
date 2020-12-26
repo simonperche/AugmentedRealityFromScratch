@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "../headers/Utils.hpp"
 #include "../headers/Object.hpp"
 
 namespace arfs
@@ -43,6 +44,11 @@ namespace arfs
     void Object::addFace(std::vector<ObjectPoint> points, const cv::Vec3d& normal)
     {
         m_faces.emplace_back(Face{std::move(points), normal});
+    }
+
+    void Object::setTextureImage(const std::string& filename)
+    {
+        m_texture = arfs::Utils::loadImage(filename);
     }
 }
 

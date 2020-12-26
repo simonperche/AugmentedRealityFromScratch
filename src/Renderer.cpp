@@ -58,6 +58,10 @@ namespace arfs
             auto light = cv::Vec3d(-1, 1, -1);
             auto angle = arfs::Utils::angleBetween(face.normal, light, arfs::AngleType::DEG);
             auto lightValue = (angle * 255) / 180;
+
+            // Get material color
+
+
             cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue, lightValue, lightValue));
         }
     }

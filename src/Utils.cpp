@@ -46,6 +46,7 @@ namespace arfs
 
     cv::Mat Utils::loadImage(const std::string& filename)
     {
+        //TODO: add custom exception with image not found
         return cv::imread(filename);
     }
 

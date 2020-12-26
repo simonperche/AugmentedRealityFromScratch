@@ -26,6 +26,7 @@ namespace arfs
     {
     public:
         void addFace(std::vector<ObjectPoint> points, const cv::Vec3d& normal = cv::Vec3d(0,0,0));
+        void setTextureImage(const std::string& filename);
         void rotate(double xAngle, double yAngle, double zAngle);
         void scale(double scale);
 
@@ -36,6 +37,7 @@ namespace arfs
 
     private:
         std::vector<Face> m_faces{};
+        cv::Mat m_texture{};
     };
 }
 

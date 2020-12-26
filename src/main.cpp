@@ -30,7 +30,7 @@ int main()
     auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
     auto scene = arfs::Scene(camera);
 
-    scene.addObject("../resources/cube.obj");
+    scene.addObject("../resources/cube.obj", "../resources/cube.mtl");
     scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
     scene.scale(100);
 

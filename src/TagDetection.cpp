@@ -181,6 +181,7 @@ namespace arfs
             cv::Mat homography = arfs::Utils::estimateHomography(candidate, dstPoints);
             if(homography.empty()) continue;
 
+            //TODO (optional): crop frame to a smaller rectangle around the candidate to improve performances
             cv::Mat candidate_mat = arfs::Utils::wrapPerspective(frame, cv::Size(300, 300), homography);
             cv::cvtColor(candidate_mat, candidate_mat, cv::COLOR_BGR2GRAY);
             cv::threshold(candidate_mat, candidate_mat, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);

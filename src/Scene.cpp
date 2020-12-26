@@ -7,9 +7,9 @@
 
 namespace arfs
 {
-    void Scene::addObject(const std::string& filename)
+    void Scene::addObject(const std::string& objFilename, const std::string& mtlFilename)
     {
-        m_objects.emplace_back(arfs::OBJLoader::load(filename));
+        m_objects.emplace_back(arfs::OBJLoader::load(objFilename, mtlFilename));
     }
 
     void Scene::scale(double scale){

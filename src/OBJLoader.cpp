@@ -23,10 +23,12 @@ namespace arfs
 
         arfs::Object object{};
 
+        // .obj
         while(std::getline(file, line))
         {
             if(line.empty()) continue;
 
+            //TODO: change by Utils::split
             std::vector<std::string> line_split;
             std::istringstream iss(line);
             for(std::string s; iss >> s;)
@@ -98,6 +100,25 @@ namespace arfs
                 }
 
                 object.addFace(face, sumNormals/(double)face.size());
+            }
+        }
+
+        if(!mtlFilename.empty())
+        {
+            std::ifstream fileMTL(mtlFilename);
+            while(std::getline(fileMTL, line))
+            {
+                auto split = arfs::Utils::split(line, ' ');
+
+                if(split.size() != 2) continue;
+
+                if(split[0] == "map_Kd")
+                {
+                    auto found = mtlFilename.find_last_of('/');
+                    auto name = mtlFilename.substr(0, found) + '/' + split[1];
+                    object.setTextureImage(name);
+                    break;
+                }
             }
         }
 
