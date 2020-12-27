@@ -15,20 +15,31 @@ namespace arfs
         if(scene.getCamera().getProjectionMatrix().empty())
             throw arfs::exceptions::EmptyProjectionMatrix();
 
-        for(const auto& object : scene.getObjects())
-        {
-            augmentObject(frame, object, scene.getCamera());
-        }
+        augmentObjects(frame, scene.getObjects(), scene.getCamera());
+
     }
 
-    void Renderer::augmentObject(const cv::Mat& frame, const Object& object, const arfs::Camera& camera)
+    void Renderer::augmentObjects(const cv::Mat& frame, const std::vector<arfs::Object> objects, const arfs::Camera& camera)
     {
-        auto faces = object.getFaces();
         auto tagProjectionSize = camera.getTagProjectionSize();
+
+        std::vector<Face> faces = std::vector<Face>();
+        for(const auto& object : objects)
+        {
+            for(auto& face : object.getFaces()) {
+                for (auto &point : face.points) {
+                    cv::Vec3d pos = object.getPosition();
+                    //Center
+                    point.x += int(tagProjectionSize / 2) + pos.val[0];
+                    point.y += int(tagProjectionSize / 2) + pos.val[1];
+                    point.z += pos.val[2];
+                }
+                faces.push_back(face);
+            }
+        }
 
         // Painter's algorithm
         //TODO: fix painter's algorithm when the camera is too close or too titled in relation to the tag
-        //TODO: fix painter's algorithm with multiples objects
         cv::Mat translation = (camera.getIntrinsicParameters().inv() * camera.getProjectionMatrix()).col(3);
         std::sort(faces.begin(), faces.end(), [&](const Face& a, const Face& b)
         {
@@ -45,12 +56,6 @@ namespace arfs
 
         for(auto& face : faces)
         {
-            for(auto& point : face.points)
-            {
-                //Center
-                point.x += int(tagProjectionSize / 2);
-                point.y += int(tagProjectionSize / 2);
-            }
             auto scene_points = projectPoint(face.points, camera.getProjectionMatrix());
 
             //TODO: add more shading methods
@@ -60,6 +65,7 @@ namespace arfs
             auto lightValue = (angle * 255) / 180;
             cv::fillConvexPoly(frame, scene_points, cv::Scalar(lightValue, lightValue, lightValue));
         }
+
     }
 
     std::vector<cv::Point2i> Renderer::projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix)

@@ -22,14 +22,21 @@ namespace arfs
         void addFace(std::vector<cv::Point3d> points, const cv::Vec3d& normal = cv::Vec3d(0,0,0));
         void rotate(double xAngle, double yAngle, double zAngle);
         void scale(double scale);
+        void position(double xTranslation, double yTranslation, double zTranslation);
 
         //TODO: add translation
 
         std::vector<Face> getFaces() const
         { return m_faces; }
 
+        cv::Vec3d getPosition() const
+        {
+            return m_position;
+        }
+
     private:
         std::vector<Face> m_faces{};
+        cv::Vec3d m_position = cv::Vec3d(0, 0, 0);
     };
 }
 

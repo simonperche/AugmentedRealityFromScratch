@@ -17,7 +17,7 @@ namespace arfs
         static void drawPolygon(const cv::Mat& frame, const std::vector<cv::Point>& points);
 
     private:
-        static void augmentObject(const cv::Mat& frame, const arfs::Object& object, const arfs::Camera& camera);
+        static void augmentObjects(const cv::Mat& frame, const std::vector<arfs::Object> objects, const arfs::Camera& camera);
         static std::vector<cv::Point2i> projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix);
     };
 }

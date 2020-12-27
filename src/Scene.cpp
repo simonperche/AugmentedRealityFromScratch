@@ -21,5 +21,14 @@ namespace arfs
     {
         for(auto& object : m_objects)
             object.rotate(xAngle, yAngle, zAngle);
+
+    }
+
+    void Scene::position(int objectIndex, double xPosition, double yPosition, double zPosition)
+    {
+        if(objectIndex >= m_objects.size())
+            throw std::exception("Error : object index out of bound of the object list");
+
+        m_objects.at(objectIndex).position(xPosition, yPosition, zPosition);
     }
 }

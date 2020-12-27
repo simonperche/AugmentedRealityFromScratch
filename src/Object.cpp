@@ -19,6 +19,11 @@ namespace arfs
         }
     }
 
+    void Object::position(double xTranslation, double yTranslation, double zTranslation)
+    {
+        m_position = cv::Vec3d(xTranslation, yTranslation, zTranslation);
+    }
+
     void Object::rotate(double xAngle, double yAngle, double zAngle)
     {
         auto rot_x = cv::Matx33d(1, 0, 0,
