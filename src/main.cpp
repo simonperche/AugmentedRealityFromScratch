@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+#include <ctime>
+
 int main()
 {
     //TODO: documentation (doxygen?)
@@ -40,6 +42,11 @@ int main()
     scene.position(2, -40, -40, 20);
     scene.scale(50);
 
+    time_t tstart, tend;
+    tstart = time(0);
+
+    int workingFrames = 0;
+    int notWorkingFrames = 0;
     cv::Mat frame;
     for(;;)
     {
@@ -68,11 +75,18 @@ int main()
             }
 
             arfs::Renderer::drawPolygon(frame, tagDetected);
+            workingFrames++;
+        } else{
+            notWorkingFrames++;
         }
 
         arfs::Utils::showImage(frame, "original");
         arfs::Utils::showImage(renderFrame, "render");
     }
+
+    tend = time(0);
+    std::cout << "It took "<< difftime(tend, tstart) <<" second(s)."<< std::endl;
+    std::cout << "Worked : "<< workingFrames <<", didn't worked : "<< notWorkingFrames << std::endl;
 
     return 0;
 }
