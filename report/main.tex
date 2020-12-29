@@ -1,0 +1,103 @@
+% !TEX program = xelatex
+
+\documentclass[a4paper, sans]{article}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{setspace}
+
+\usepackage[top=30mm, bottom=30mm]{geometry}
+
+\usepackage{listings}
+
+\usepackage[font=small, labelfont=bf]{caption}
+\usepackage[nottoc, notlof, notlot]{tocbibind}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\hypersetup{
+    colorlinks,
+    linkcolor={red},
+    citecolor={black},
+    urlcolor={blue}
+}
+
+\date{\today}
+\author{Simon Perche \\ Nicolas Lépy \\ \\
+Université de Technologie de Belfort-Montbéliard}
+\title{Projet IN5X - Rapport}
+
+\rhead{\leftmark}
+\lhead{}
+\lfoot{UTBM}
+\rfoot{Mélanie \bsc{Legros}\\Nicolas \bsc{Lépy}\\Simon \bsc{Perche}\\Hydriss \bsc{Ruet}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{2pt}
+
+\onehalfspacing % Set line spacing to 1.5
+
+\begin{document}
+    \begin{titlepage}
+
+      \newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+      
+      \centering % Center everything on the page
+      
+      %----------------------------------------------------------------------------------------
+      %	HEADING SECTIONS
+      %----------------------------------------------------------------------------------------
+      
+      \textsc{\LARGE Université de Technologie \\de Belfort-Montbéliard}\\[1.5cm] % Name of your university/college
+      \textsc{\Large Informatique}\\[0.5cm] % Major heading such as course name
+      \textsc{\large Image, interaction et réalité virtuelle}\\[0.5cm] % Minor heading such as course title
+      
+      %----------------------------------------------------------------------------------------
+      %	TITLE SECTION
+      %----------------------------------------------------------------------------------------
+      
+      \HRule \\[0.4cm]
+      { \huge \bfseries Augmented Reality From Scratch\\IN5X - Projet}\\[0.4cm] % Title of your document
+      \HRule \\[1.5cm]
+      
+      %----------------------------------------------------------------------------------------
+      %	AUTHOR SECTION
+      %----------------------------------------------------------------------------------------
+
+      
+      % If you don't want a supervisor, uncomment the two lines below and remove the section above
+      \Large \emph{Auteurs :}\\
+      Mélanie \bsc{Legros}\\Nicolas \bsc{Lépy}\\Simon \bsc{Perche}\\Hydriss \bsc{Ruet}\\[3cm] % Your name
+      
+      %----------------------------------------------------------------------------------------
+      %	DATE SECTION
+      %----------------------------------------------------------------------------------------
+      
+      {\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+      
+      %----------------------------------------------------------------------------------------
+      %	LOGO SECTION
+      %----------------------------------------------------------------------------------------
+      
+      \includegraphics[scale=0.18]{img/utbm_logo.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
+      
+      %----------------------------------------------------------------------------------------
+      
+      \vfill % Fill the rest of the page with whitespace
+      
+    \end{titlepage}
+    \thispagestyle{empty}
+
+    \clearpage
+
+    {\hypersetup{linkcolor=black}
+    \tableofcontents }
+
+    \newpage
+
+    %Include tex_files
+
+\end{document}
