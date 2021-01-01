@@ -1,0 +1,18 @@
+\newpage
+\addpart{Perspectives d'améliorations}
+
+\section{Détection de tag}
+
+    \subsection{Robustesse de la détection}
+
+    Une des faiblesses de notre système de détection de tag est l'impossibilité du système à détecter le tag lorsque ce dernier n'est pas entièrement dans l'écran.
+
+    Implémenter une méthode permettant justement de réussir à estimer la position du tag à partir d'un fragment visible de ce dernier aurait pu s'avérer intéressant, les mouvements de l'utilisateur pouvant faire sortir régulièrement le tag du champ de la caméra.
+
+\section{Techniques de rendu}
+
+    \subsection{Ombrage de Gouaraud}
+
+    Il aurait également été intéressant d'implémenter, pour un souci de réalisme, d'autres méthodes d'ombrage que l'ombrage plat, tel que l'ombrage de Gouraud.
+
+    Malheureusement, OpenCV n'est pas l'outil le plus adapté à ce genre de tâche. Pour parvenir plus facilement à un résultat, nous aurions pu utiliser un moteur de rendu.

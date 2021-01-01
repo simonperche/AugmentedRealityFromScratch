@@ -8,6 +8,8 @@
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{setspace}
+\usepackage{placeins}
+\usepackage{unnumberedtotoc}
 
 \usepackage[top=30mm, bottom=30mm]{geometry}
 
@@ -99,5 +101,11 @@ Université de Technologie de Belfort-Montbéliard}
     \newpage
 
     %Include tex_files
+    \include{tex_files/introduction}
+
+    \include{tex_files/detection}
+    \include{tex_files/scene}
+    \include{tex_files/ameliorations}
+    
 
 \end{document}
