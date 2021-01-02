@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     std::string tagFilename{};
 
     bool calibrateCamera;
-    std::array<int, 2> checkerboardSize{};
+    std::array<int, 2> checkerboardSize{0,0};
     std::string imgFolderCalibration{};
     bool needToTakePicturesForCalibration;
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
     if(calibrateCamera)
     {
-        if(checkerboardSize.empty() || imgFolderCalibration.empty())
+        if(checkerboardSize[0] == 0 || checkerboardSize[1] == 0 || imgFolderCalibration.empty())
         {
             std::cout << "You need to set the size of the checkerboard and the images folder in order to use calibration." << std::endl;
             return -1;

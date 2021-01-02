@@ -38,9 +38,12 @@ namespace arfs
                 }
             }
 
-            // Comes from https://gist.github.com/mark-d-holmberg/862733
-            std::istringstream ss(argValue);
-            ss >> output;
+            if(found)
+            {
+                // Comes from https://gist.github.com/mark-d-holmberg/862733
+                std::istringstream ss(argValue);
+                ss >> output;
+            }
 
             return found;
         }
