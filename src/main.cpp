@@ -28,13 +28,24 @@ int main(int argc, char *argv[])
     std::string cameraParametersFile{};
     std::string tagFilename{};
 
+    bool calibrateCamera;
+    std::array<int, 2> checkerboardSize{};
+    std::string imgFolderCalibration{};
+    bool needToTakePicturesForCalibration;
+
     // Arguments parsing
     try
     {
-        cmdParser.getArgValue<int>("-w", "--webcam", camId);
+        cmdParser.getArgValue<int>("--webcam", "-w", camId);
         cmdParser.getArgValue<std::string>("--video", "-v", videoFile);
         cmdParser.getArgValue<std::string>("--camera-parameters", "-p", cameraParametersFile);
         cmdParser.getArgValue<std::string>("--tag", "-t", tagFilename);
+
+        calibrateCamera = cmdParser.getFlagValue("--calibrate", "-c");
+        cmdParser.getArgValue<int>("--checker-size-width", "", checkerboardSize[0]);
+        cmdParser.getArgValue<int>("--checker-size-height", "", checkerboardSize[1]);
+        cmdParser.getArgValue<std::string>("--images-folder", "", imgFolderCalibration);
+        needToTakePicturesForCalibration = cmdParser.getFlagValue("--take-pictures", "");
 
         if(cmdParser.getFlagValue("--help", "-h"))
         {
@@ -48,7 +59,6 @@ int main(int argc, char *argv[])
             std::cout << "Calibration (optional) :" << std::endl;
             std::cout << "\t[--calibrate | -c] : calibrate the camera." << std::endl
                       << "\t--checker-size-width size : width of the checker board." << std::endl
-                      << "\t--checker-size-height size : height of the checkerboard." << std::endl
                       << "\t--checker-size-height size : height of the checkerboard." << std::endl
                       << "\t--images-folder foldername : folder where to save calibration images." << std::endl
                       << "\t[--take-pictures] : if specified, the program will ask you to take checkerboard pictures, "
@@ -65,27 +75,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    arfs::Camera camera{};
-//    camera.calibrateAndSave("../resources/oneplus.cam",
-//                            std::array<int,2>{11,11},
-//                            "../resources/images_calibration/", 0.2);
-
-    if(cameraParametersFile.empty())
-    {
-        std::cout << "You should specify camera parameters with --camera-parameters or -p, "
-                     "or calibrate your camera with --calibrate or -c.";
-        return -1;
-    }
-    camera.loadParameters(cameraParametersFile);
-
-
-    if(tagFilename.empty())
-    {
-        std::cout << "You should specify a tag filename with --tag or -t." << std::endl;
-        return -1;
-    }
-    auto tagDetection = arfs::TagDetection(arfs::ARTag(tagFilename), true);
-
     arfs::Video video;
     if(camId != -1)
         video = arfs::Video(camId, 1, 1);
@@ -97,13 +86,44 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    arfs::Camera camera{};
+
+    if(cameraParametersFile.empty())
+    {
+        std::cout << "You should specify camera parameters with --camera-parameters or -p, "
+                     "or calibrate your camera with --calibrate or -c.";
+        return -1;
+    }
+
+    if(calibrateCamera)
+    {
+        if(checkerboardSize.empty() || imgFolderCalibration.empty())
+        {
+            std::cout << "You need to set the size of the checkerboard and the images folder in order to use calibration." << std::endl;
+            return -1;
+        }
+
+        camera.calibrateAndSave(cameraParametersFile, checkerboardSize, imgFolderCalibration,
+                                1, video, needToTakePicturesForCalibration);
+    }
+
+    camera.loadParameters(cameraParametersFile);
+
+
+    if(tagFilename.empty())
+    {
+        std::cout << "You should specify a tag filename with --tag or -t." << std::endl;
+        return -1;
+    }
+    auto tagDetection = arfs::TagDetection(arfs::ARTag(tagFilename));
+
     auto scene = arfs::Scene(camera);
 
     scene.addObject("../resources/monkey.obj", "../resources/monkey.mtl");
     scene.addObject("../resources/low_poly_fox.obj", "../resources/low_poly_fox.mtl");
 
     scene.rotate(arfs::Utils::degToRad(90), arfs::Utils::degToRad(0), arfs::Utils::degToRad(180));
-    scene.position(0, 100, 0,0);
+    scene.position(0, 100, 0, 0);
     scene.position(1, -100, 0, 0);
     scene.scale(60);
     scene.scale(1, 2.5);

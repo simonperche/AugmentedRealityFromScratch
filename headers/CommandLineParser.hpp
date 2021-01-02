@@ -17,7 +17,7 @@ namespace arfs
         CommandLineParser(int argc, char *argv[]);
 
         template<typename T>
-        bool getArgValue(const std::string& shortArg, const std::string& longArg, T& output)
+        bool getArgValue(const std::string& longArg, const std::string& shortArg, T& output)
         {
             std::string argValue{};
             bool found{false};
@@ -45,7 +45,7 @@ namespace arfs
             return found;
         }
 
-        bool getFlagValue(const std::string& shortFlag, const std::string& longFlag);
+        bool getFlagValue(const std::string& longFlag, const std::string& shortFlag);
 
 
     private:

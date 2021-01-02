@@ -50,10 +50,11 @@ namespace arfs
                                   const std::string& imgFolder, double resizeFactor,
                                   arfs::Video cap, bool needToTakePictures)
     {
-        //TODO: print usage
         cv::Mat frame;
         if(needToTakePictures)
         {
+            std::cout << "Press 's' in order to take pictures. Please try to take the checkerboard from several angles. "
+                         "Around 5 to 6 images are needed to calculate the calibration. Press escape to finish." << std::endl;
             int cpt = 1;
             for(;;)
             {

@@ -16,7 +16,7 @@ namespace arfs
         }
     }
 
-    bool CommandLineParser::getFlagValue(const std::string& shortFlag, const std::string& longFlag)
+    bool CommandLineParser::getFlagValue(const std::string& longFlag, const std::string& shortFlag)
     {
         bool ret{false};
         for(const auto& arg : m_argv)
