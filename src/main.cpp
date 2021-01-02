@@ -20,7 +20,7 @@ int main()
     //TODO: documentation (doxygen?)
     //TODO: Add args to launch the program from command line
 
-    auto video = arfs::Video(0, 1,1);
+    auto video = arfs::Video(0, 1, 1);
 //    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
 
     arfs::Camera camera{};
@@ -32,12 +32,12 @@ int main()
     auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
     auto scene = arfs::Scene(camera);
 
-    scene.addObject("../resources/monkey.obj");
+    scene.addObject("../resources/monkey.obj", "../resources/monkey.mtl");
     scene.addObject("../resources/monkey.obj");
     scene.addObject("../resources/cube.obj");
-    scene.addObject("../resources/low_poly_fox.obj");
+    scene.addObject("../resources/low_poly_fox.obj", "../resources/low_poly_fox.mtl");
 
-    scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
+    scene.rotate(arfs::Utils::degToRad(90), arfs::Utils::degToRad(0), arfs::Utils::degToRad(180));
     scene.position(0, 60, -50, -250);
     scene.position(1, 0, 0, 0);
     scene.position(2, -40, -40, 20);
@@ -79,7 +79,9 @@ int main()
 
             arfs::Renderer::drawPolygon(frame, tagDetected);
             workingFrames++;
-        } else{
+        }
+        else
+        {
             notWorkingFrames++;
         }
 
@@ -88,8 +90,8 @@ int main()
     }
 
     tend = time(0);
-    std::cout << "It took "<< difftime(tend, tstart) <<" second(s)."<< std::endl;
-    std::cout << "Worked : "<< workingFrames <<", didn't worked : "<< notWorkingFrames << std::endl;
+    std::cout << "It took " << difftime(tend, tstart) << " second(s)." << std::endl;
+    std::cout << "Worked : " << workingFrames << ", didn't worked : " << notWorkingFrames << std::endl;
 
     return 0;
 }
