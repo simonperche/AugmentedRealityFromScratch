@@ -18,7 +18,7 @@ namespace arfs
     }
 
     Video::Video(int camId, double xResize, double yResize)
-            : m_video(camId), m_resizeValues(xResize, yResize)
+            : m_video(camId, cv::CAP_DSHOW), m_resizeValues(xResize, yResize)
     {
         if(!m_video.isOpened())
             throw std::exception("Error : the webcam is not opened. Please check the id.");

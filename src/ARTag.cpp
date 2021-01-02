@@ -9,7 +9,7 @@
 
 namespace arfs
 {
-    ARTag::ARTag(const std::string& filename) : m_img(arfs::Utils::loadImage(filename))
+    ARTag::ARTag(const std::string& filename) : m_img(arfs::Utils::Image::loadImage(filename))
     {
         generateCode();
     }

@@ -24,8 +24,6 @@ namespace arfs
         void scale(double scale);
         void position(int objectIndex, double xPosition, double yPosition, double zPosition);
 
-        //TODO: Add scale, rotate and remove only one object
-
         arfs::Camera& getCamera()
         { return m_camera; }
 

@@ -48,11 +48,7 @@ namespace arfs
         {
             if(line.empty()) continue;
 
-            //TODO: change by Utils::split
-            std::vector<std::string> line_split;
-            std::istringstream iss(line);
-            for(std::string s; iss >> s;)
-                line_split.push_back(s);
+            auto line_split = arfs::Utils::split(line, ' ');
 
             if(line_split.empty()) continue;
 

@@ -15,48 +15,55 @@ namespace arfs
         RAD
     };
 
-    class Utils
+    namespace Utils
     {
-        //TODO: reorganize by categories in subnamespace
-    public:
-        static double angleBetween(const cv::Point& v1, const cv::Point& v2, AngleType type = AngleType::RAD);
-        static double angleBetween(const cv::Vec3d& v1, const cv::Vec3d& v2, AngleType type = AngleType::RAD);
+        std::vector<std::string> split(std::string s, const char& delimiter);
 
-        static double degToRad(double deg)
-        { return deg * (Utils::PI / 180); }
+        namespace Geometry
+        {
+            constexpr double PI = 3.141592653589793238463;
 
-        // cv::norm is not implemented with two points
-        static double norm(const cv::Point& p1, const cv::Point& p2);
+            double angleBetween(const cv::Point& v1, const cv::Point& v2, AngleType type = AngleType::RAD);
 
-        static void saveImage(const cv::Mat& img, const std::string& filename);
+            double angleBetween(const cv::Vec3d& v1, const cv::Vec3d& v2, AngleType type = AngleType::RAD);
 
-        static void showImage(const cv::Mat& img, const std::string& winname);
+            // cv::norm is not implemented with two points
+            double norm(const cv::Point& p1, const cv::Point& p2);
 
-        static cv::Mat loadImage(const std::string& filename);
+            inline double degToRad(double deg)
+            { return deg * (PI / 180); }
+        }
 
-        static std::vector<std::string> split(std::string s, const char& delimiter);
+        namespace Image
+        {
+            void saveImage(const cv::Mat& img, const std::string& filename);
 
-        /**
-         * Estimate the homography matrix between two sets of four points
-         * @return homography 3x3 matrix
-         * @param srcPoints
-         * @param dstPoints
-         */
-        static cv::Mat estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints);
+            void showImage(const cv::Mat& img, const std::string& winname);
 
-        static cv::Mat wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix);
+            cv::Mat loadImage(const std::string& filename);
+        }
 
-        static constexpr double PI = 3.141592653589793238463;
+        namespace CV
+        {
+            /**
+            * Estimate the homography matrix between two sets of four points
+            * @return homography 3x3 matrix
+            * @param srcPoints
+            * @param dstPoints
+            */
+            cv::Mat estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints);
 
-    private:
-        /**
-         * Apply a gaussian elimination on a matrix
-         * @param matrix matrix to solve
-         * @param rows rows count on matrix
-         * @param cols cols count on matrix
-         */
-        static void gaussJordanElimination(cv::Mat &matrix, int rows, int cols);
-    };
+            cv::Mat wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix);
+
+            /**
+            * Apply a gaussian elimination on a matrix
+            * @param matrix matrix to solve
+            * @param rows rows count on matrix
+            * @param cols cols count on matrix
+            */
+            static void gaussJordanElimination(cv::Mat& matrix, int rows, int cols);
+        }
+    }
 }
 
 #endif //AR_UTILS_HPP

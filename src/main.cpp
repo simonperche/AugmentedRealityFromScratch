@@ -121,7 +121,9 @@ int main(int argc, char *argv[])
     scene.addObject("../resources/monkey.obj", "../resources/monkey.mtl");
     scene.addObject("../resources/low_poly_fox.obj", "../resources/low_poly_fox.mtl");
 
-    scene.rotate(arfs::Utils::degToRad(90), arfs::Utils::degToRad(0), arfs::Utils::degToRad(180));
+    scene.rotate(arfs::Utils::Geometry::degToRad(90),
+                 arfs::Utils::Geometry::degToRad(0),
+                 arfs::Utils::Geometry::degToRad(180));
     scene.position(0, 100, 0, 0);
     scene.position(1, -100, 0, 0);
     scene.scale(60);
@@ -133,6 +135,9 @@ int main(int argc, char *argv[])
     int workingFrames = 0;
     int notWorkingFrames = 0;
     cv::Mat frame;
+
+    std::cout << "Press escape to finish." << std::endl;
+
     for(;;)
     {
         frame = video.getNextFrame();
@@ -167,13 +172,13 @@ int main(int argc, char *argv[])
             notWorkingFrames++;
         }
 
-        arfs::Utils::showImage(frame, "original");
-        arfs::Utils::showImage(renderFrame, "render");
+        arfs::Utils::Image::showImage(frame, "original");
+        arfs::Utils::Image::showImage(renderFrame, "render");
     }
 
     tend = time(0);
     std::cout << "It took " << difftime(tend, tstart) << " second(s)." << std::endl;
-    std::cout << "Worked : " << workingFrames << ", didn't worked : " << notWorkingFrames << std::endl;
+    std::cout << "Worked : " << workingFrames << " frames ; didn't worked : " << notWorkingFrames << " frames" << std::endl;
 
     return 0;
 }

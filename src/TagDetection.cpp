@@ -33,7 +33,7 @@ namespace arfs
             bool enoughMovement = false;
             for(int i = 0 ; i < candidate.size() ; ++i)
             {
-                if(arfs::Utils::norm(candidate[i], m_tagCorners[i]) > m_minimumDistance)
+                if(arfs::Utils::Geometry::norm(candidate[i], m_tagCorners[i]) > m_minimumDistance)
                 {
                     enoughMovement = true;
                     break;
@@ -117,7 +117,7 @@ namespace arfs
                 const auto& vec1 = next - p;
                 const auto& vec2 = p - previous;
 
-                double angle = arfs::Utils::angleBetween(vec1, vec2, arfs::AngleType::DEG);
+                double angle = arfs::Utils::Geometry::angleBetween(vec1, vec2, arfs::AngleType::DEG);
 
                 //Points are aligned
                 if(angle < angleThreshold)
@@ -158,9 +158,9 @@ namespace arfs
                 const auto& previous = (i != 0) ? hull[0][i - 1] : hull[0][hull[0].size() - 1];
                 const auto& next = (i != hull[0].size() - 1) ? hull[0][i + 1] : hull[0][0];
 
-                if(arfs::Utils::norm(p, previous) < distanceThreshold)
+                if(arfs::Utils::Geometry::norm(p, previous) < distanceThreshold)
                     groupClosePoints(close_points, p, previous);
-                else if(arfs::Utils::norm(p, next) < distanceThreshold)
+                else if(arfs::Utils::Geometry::norm(p, next) < distanceThreshold)
                     groupClosePoints(close_points, p, next);
                 else
                     close_points.push_back(std::vector<cv::Point>{p});
@@ -199,11 +199,11 @@ namespace arfs
         for(int rotation = 0; rotation < 4; rotation++)
         {
             std::rotate(candidate.begin(), candidate.begin() + 1, candidate.end());
-            cv::Mat homography = arfs::Utils::estimateHomography(candidate, dstPoints);
+            cv::Mat homography = arfs::Utils::CV::estimateHomography(candidate, dstPoints);
             if(homography.empty()) continue;
 
             //TODO (optional): crop frame to a smaller rectangle around the candidate to improve performances
-            cv::Mat candidate_mat = arfs::Utils::wrapPerspective(frame, cv::Size(300, 300), homography);
+            cv::Mat candidate_mat = arfs::Utils::CV::wrapPerspective(frame, cv::Size(300, 300), homography);
             cv::cvtColor(candidate_mat, candidate_mat, cv::COLOR_BGR2GRAY);
             cv::threshold(candidate_mat, candidate_mat, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
 

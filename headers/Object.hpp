@@ -39,7 +39,7 @@ namespace arfs
         std::vector<Face> m_faces{};
         cv::Mat m_texture{};
         cv::Vec3d m_position = cv::Vec3d(0, 0, 0);
-        int m_scale{1};
+        double m_scale{1.};
     };
 }
 

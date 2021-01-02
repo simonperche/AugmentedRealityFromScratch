@@ -74,7 +74,7 @@ namespace arfs
 
     void Object::setTextureImage(const std::string& filename)
     {
-        m_texture = arfs::Utils::loadImage(filename);
+        m_texture = arfs::Utils::Image::loadImage(filename);
     }
 }
 
