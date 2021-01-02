@@ -37,6 +37,7 @@ namespace arfs
     private:
         std::vector<Face> m_faces{};
         cv::Vec3d m_position = cv::Vec3d(0, 0, 0);
+        int m_scale{1};
     };
 }
 

@@ -19,6 +19,8 @@ namespace arfs
 
         void addObject(const std::string& filename);
         void rotate(double xAngle, double yAngle, double zAngle);
+        void rotate(int objectIndex, double xAngle, double yAngle, double zAngle);
+        void scale(int objectIndex, double scale);
         void scale(double scale);
         void position(int objectIndex, double xPosition, double yPosition, double zPosition);
 

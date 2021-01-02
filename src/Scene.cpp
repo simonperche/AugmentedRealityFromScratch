@@ -12,7 +12,8 @@ namespace arfs
         m_objects.emplace_back(arfs::OBJLoader::load(filename));
     }
 
-    void Scene::scale(double scale){
+    void Scene::scale(double scale)
+    {
         for(auto& object : m_objects)
             object.scale(scale);
     }
@@ -21,6 +22,21 @@ namespace arfs
     {
         for(auto& object : m_objects)
             object.rotate(xAngle, yAngle, zAngle);
+    }
+
+    void Scene::scale(int objectIndex, double scale){
+        if(objectIndex >= m_objects.size())
+            throw std::exception("Error : object index out of bound of the object list");
+
+        m_objects[objectIndex].scale(scale);
+    }
+
+    void Scene::rotate(int objectIndex, double xAngle, double yAngle, double zAngle)
+    {
+        if(objectIndex >= m_objects.size())
+            throw std::exception("Error : object index out of bound of the object list");
+
+        m_objects[objectIndex].rotate(xAngle, yAngle, zAngle);
 
     }
 
@@ -29,6 +45,6 @@ namespace arfs
         if(objectIndex >= m_objects.size())
             throw std::exception("Error : object index out of bound of the object list");
 
-        m_objects.at(objectIndex).position(xPosition, yPosition, zPosition);
+        m_objects[objectIndex].position(xPosition, yPosition, zPosition);
     }
 }

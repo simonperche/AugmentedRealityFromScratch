@@ -14,9 +14,12 @@ namespace arfs
         {
             for(auto& point : face.points)
             {
+                point /= m_scale;
                 point *= scale;
             }
         }
+
+        m_scale = scale;
     }
 
     void Object::position(double xTranslation, double yTranslation, double zTranslation)

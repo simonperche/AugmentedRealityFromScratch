@@ -35,12 +35,15 @@ int main()
     scene.addObject("../resources/monkey.obj");
     scene.addObject("../resources/monkey.obj");
     scene.addObject("../resources/cube.obj");
+    scene.addObject("../resources/low_poly_fox.obj");
 
     scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
     scene.position(0, 60, -50, -250);
     scene.position(1, 0, 0, 0);
     scene.position(2, -40, -40, 20);
+    scene.position(3, -250, 0, 0);
     scene.scale(50);
+    scene.scale(3, 3);
 
     time_t tstart, tend;
     tstart = time(0);
