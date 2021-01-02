@@ -16,8 +16,7 @@ An augmented reality application from scratch using OpenCV for learning purpose.
 | Add materials support (only flat color)  | Done         |
 |                                          |              |
 | Stabilize detected tag                   | In dev       |
-|                                          |              |
-| Improve the robustness of tag detection  | To do        |
+| Improve the robustness of tag detection  | In dev       |
 
 
 ## Installation
@@ -32,3 +31,9 @@ You can either compile OpenCV or get it from pre-compiled version.
 This project was tested with :
   * MSVC version 16 (2019)
   * OpenCV 4.5.0 with dynamic linking
+  
+## Contributors
+
+[Simon Perche](https://github.com/Solidras) \
+[Nicolas Lépy](https://github.com/nicolasLepy)
+

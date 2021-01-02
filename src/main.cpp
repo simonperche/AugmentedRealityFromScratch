@@ -109,7 +109,6 @@ int main(int argc, char *argv[])
 
     camera.loadParameters(cameraParametersFile);
 
-
     if(tagFilename.empty())
     {
         std::cout << "You should specify a tag filename with --tag or -t." << std::endl;
