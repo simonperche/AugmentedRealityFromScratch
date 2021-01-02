@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include "exceptions.hpp"
 
 namespace arfs
 {
@@ -37,16 +38,9 @@ namespace arfs
                 }
             }
 
+            // Comes from https://gist.github.com/mark-d-holmberg/862733
             std::istringstream ss(argValue);
-//        try
-//        {
             ss >> output;
-//        }
-//        catch(std::exception& e)
-//        {
-//            throw arfs::exceptions::BadCommandLineFormatting(longArg, "Cannot convert " + argValue + " to the right type.");
-//        }
-
 
             return found;
         }

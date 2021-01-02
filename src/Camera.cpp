@@ -50,6 +50,7 @@ namespace arfs
                                   const std::string& imgFolder, double resizeFactor,
                                   arfs::Video cap, bool needToTakePictures)
     {
+        //TODO: print usage
         cv::Mat frame;
         if(needToTakePictures)
         {
