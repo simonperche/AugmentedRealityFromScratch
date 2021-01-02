@@ -16,7 +16,7 @@ namespace arfs
     class TagDetection
     {
     public:
-        explicit TagDetection(const arfs::ARTag& tag, bool verbose = false) : m_tagToDetect(tag), m_verbose(verbose)
+        explicit TagDetection(const arfs::ARTag& tag, bool verbose = false) : m_tagToDetect(tag), m_verbose(verbose), m_perfectMatchingTagFound(false), m_requirementLevel(55)
         {};
 
         std::vector<cv::Point> update(const cv::Mat& frame);
@@ -25,6 +25,11 @@ namespace arfs
         arfs::ARTag m_tagToDetect;
         std::vector<cv::Point> m_tagCorners{};
         arfs::Tracking m_tracking{};
+        bool m_perfectMatchingTagFound;
+        /**
+         * Number of minimum matching cells to consider candidate tag to be validated
+         */
+        int m_requirementLevel;
         bool m_verbose;
         static constexpr double m_minimumDistance{2};
 
@@ -32,7 +37,9 @@ namespace arfs
 
         static std::vector<std::vector<cv::Point>> extractTagCandidates(const cv::Mat& frame);
 
-        bool recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate);
+        bool recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate, bool needPerfectTagMatching = false);
+
+        cv::Mat gaussianDeblurring(cv::Mat& imgIn);
     };
 }
 

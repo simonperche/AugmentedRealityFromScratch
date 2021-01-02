@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+#include <ctime>
+
 int main()
 {
     //TODO: documentation (doxygen?)
@@ -30,10 +32,24 @@ int main()
     auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
     auto scene = arfs::Scene(camera);
 
-    scene.addObject("../resources/low_poly_fox.obj", "../resources/low_poly_fox.mtl");
-    scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
-    scene.scale(3);
+    scene.addObject("../resources/monkey.obj");
+    scene.addObject("../resources/monkey.obj");
+    scene.addObject("../resources/cube.obj");
+    scene.addObject("../resources/low_poly_fox.obj");
 
+    scene.rotate(arfs::Utils::degToRad(90),arfs::Utils::degToRad(0),arfs::Utils::degToRad(180));
+    scene.position(0, 60, -50, -250);
+    scene.position(1, 0, 0, 0);
+    scene.position(2, -40, -40, 20);
+    scene.position(3, -250, 0, 0);
+    scene.scale(50);
+    scene.scale(3, 3);
+
+    time_t tstart, tend;
+    tstart = time(0);
+
+    int workingFrames = 0;
+    int notWorkingFrames = 0;
     cv::Mat frame;
     for(;;)
     {
@@ -62,11 +78,18 @@ int main()
             }
 
             arfs::Renderer::drawPolygon(frame, tagDetected);
+            workingFrames++;
+        } else{
+            notWorkingFrames++;
         }
 
         arfs::Utils::showImage(frame, "original");
         arfs::Utils::showImage(renderFrame, "render");
     }
+
+    tend = time(0);
+    std::cout << "It took "<< difftime(tend, tstart) <<" second(s)."<< std::endl;
+    std::cout << "Worked : "<< workingFrames <<", didn't worked : "<< notWorkingFrames << std::endl;
 
     return 0;
 }

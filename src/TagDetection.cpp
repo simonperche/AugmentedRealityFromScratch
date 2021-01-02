@@ -10,6 +10,16 @@
 
 namespace arfs
 {
+
+    cv::Mat TagDetection::gaussianDeblurring(cv::Mat& imgIn)
+    {
+        cv::Mat res;
+        cv::Mat imgTemp;
+        cv::GaussianBlur(imgIn, imgTemp, cv::Size(0, 0), 3);
+        cv::addWeighted(imgIn, 1.5, imgTemp, -0.5, 0, res);
+        return res;
+    }
+
     std::vector<cv::Point> TagDetection::update(const cv::Mat& frame)
     {
         if(m_tagCorners.empty())
@@ -33,10 +43,20 @@ namespace arfs
             if(!enoughMovement)
                 candidate = m_tagCorners;
 
-            if(candidate.empty() || !recognizeTag(frame, candidate))
+            if(candidate.empty() || !recognizeTag(frame, candidate, true))
                 fullDetection(frame);
             else if(m_verbose)
                 m_tracking.showTrackedPoint(frame);
+        }
+
+        // If tag wasn't recognized, maybe it's because of motion blur
+        // Applying a Gaussian Deblurring and retry to detect the tag
+        if(m_tagCorners.empty())
+        {
+            cv::Mat in = frame.clone();
+            cv::Mat deblurred = gaussianDeblurring(in);
+
+            fullDetection(deblurred);
         }
 
         return m_tagCorners;
@@ -47,6 +67,7 @@ namespace arfs
         auto tagCandidates = extractTagCandidates(frame);
         for(auto candidate : tagCandidates)
         {
+            m_perfectMatchingTagFound = false;
             if(recognizeTag(frame, candidate))
             {
                 m_tracking.clear();
@@ -162,7 +183,7 @@ namespace arfs
         return candidates;
     }
 
-    bool TagDetection::recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate)
+    bool TagDetection::recognizeTag(const cv::Mat& frame, std::vector<cv::Point>& candidate, bool needPerfectTagMatching)
     {
         //TODO: maybe rewrite threshold
         m_tagCorners.clear();
@@ -187,7 +208,18 @@ namespace arfs
             cv::threshold(candidate_mat, candidate_mat, 0, 255, cv::THRESH_BINARY + cv::THRESH_OTSU);
 
             auto candidateTag = arfs::ARTag(candidate_mat);
-            if(candidateTag.getCode() == m_tagToDetect.getCode())
+
+            int matchingCells = 0;
+            for(int i = 0; i<64; i++)
+            {
+                if(candidateTag.getCode().at(i) == m_tagToDetect.getCode().at(i))
+                {
+                    matchingCells++;
+                }
+            }
+            if(candidateTag.getCode() == m_tagToDetect.getCode()) m_perfectMatchingTagFound = true;
+
+            if(candidateTag.getCode() == m_tagToDetect.getCode() || (matchingCells > m_requirementLevel && !m_perfectMatchingTagFound && !needPerfectTagMatching))
             {
                 found = true;
                 m_tagCorners = candidate;

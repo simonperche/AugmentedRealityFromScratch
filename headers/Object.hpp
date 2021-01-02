@@ -24,8 +24,7 @@ namespace arfs
         void setTextureImage(const std::string& filename);
         void rotate(double xAngle, double yAngle, double zAngle);
         void scale(double scale);
-
-        //TODO: add translation
+        void position(double xTranslation, double yTranslation, double zTranslation);
 
         std::vector<Face> getFaces() const
         { return m_faces; }
@@ -33,9 +32,15 @@ namespace arfs
         cv::Mat getTexture() const
         { return m_texture; }
 
+        cv::Vec3d getPosition() const
+        { return m_position; }
+
     private:
         std::vector<Face> m_faces{};
         cv::Mat m_texture{};
+        std::vector<Face> m_faces{};
+        cv::Vec3d m_position = cv::Vec3d(0, 0, 0);
+        int m_scale{1};
     };
 }
 
