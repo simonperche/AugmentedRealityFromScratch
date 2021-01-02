@@ -42,11 +42,14 @@ int main(int argc, char *argv[])
                       << "\t[--video | -v] filename : use video file as input. Filename is required." << std::endl
                       << "\t[--camera-parameters | -p] filename : use filename file from camera calibration." << std::endl;
 
-            std::cout << "Calibration :" << std::endl;
+            std::cout << "Calibration (optional) :" << std::endl;
             std::cout << "\t[--calibrate | -c] : calibrate the camera." << std::endl
                       << "\t--checker-size-width size : width of the checker board." << std::endl
-                      << "\t--checker-size-height size : height of the checker board." << std::endl
-                      << "\t--checker-size-height size : height of the checker board." << std::endl;
+                      << "\t--checker-size-height size : height of the checkerboard." << std::endl
+                      << "\t--checker-size-height size : height of the checkerboard." << std::endl
+                      << "\t--images-folder foldername : folder where to save calibration images." << std::endl
+                      << "\t[--take-pictures] : if specified, the program will ask you to take checkerboard pictures, "
+                         "otherwise load images from images folder." << std::endl;
 
             std::cout << "Other :" << std::endl;
             std::cout << "\t[--help | -h] : display this help and exit" << std::endl;
