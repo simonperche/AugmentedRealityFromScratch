@@ -22,9 +22,8 @@ namespace arfs::exceptions
     {
     public:
         explicit BadCommandLineFormatting(const std::string& arg, const std::string& endingMessage="")
-        {
-            m_message = "bad command line formatting. Please check " + arg + "argument. " + endingMessage;
-        }
+        : m_message("bad command line formatting. Please check " + arg + "argument. " + endingMessage)
+        {}
 
         virtual const char *what() const noexcept
         {

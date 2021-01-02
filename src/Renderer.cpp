@@ -20,7 +20,7 @@ namespace arfs
 
     }
 
-    void Renderer::augmentObjects(const cv::Mat& frame, const std::vector<arfs::Object> objects, const arfs::Camera& camera)
+    void Renderer::augmentObjects(const cv::Mat& frame, const std::vector<arfs::Object>& objects, const arfs::Camera& camera)
     {
         auto tagProjectionSize = camera.getTagProjectionSize();
 
