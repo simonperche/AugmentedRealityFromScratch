@@ -10,18 +10,53 @@
 #include "../headers/Utils.hpp"
 #include "../headers/Camera.hpp"
 #include "../headers/exceptions.hpp"
+#include "../headers/CommandLineParser.hpp"
 
 #include <iostream>
 
 #include <ctime>
 
-int main()
+int main(int argc, char *argv[])
 {
     //TODO: documentation (doxygen?)
-    //TODO: Add args to launch the program from command line
+    //TODO: Add config file for the scene
 
-    auto video = arfs::Video(0, 1, 1);
-//    auto video = arfs::Video("../resources/marker.mp4", 0.5, 0.5);
+    auto cmdParser = arfs::CommandLineParser(argc, argv);
+
+    int camId{-1};
+    std::string videoFile{};
+
+    // Arguments parsing
+    try
+    {
+        cmdParser.getArgValue<int>("-w", "--webcam", camId);
+        cmdParser.getArgValue<std::string>("--video", "-v", videoFile);
+
+        if(cmdParser.getFlagValue("--help", "-h"))
+        {
+            std::cout << "Augmented Reality from scratch. Command line arguments :" << std::endl;
+            std::cout << "\t[--webcam | -w] id : use webcam as video input. The first webcam is id 0." << std::endl
+                      << "\t[--video | -v] filename : use video file as input. Filename is required." << std::endl
+                      << "\t[--help | -h] : display this help and exit" << std::endl;
+            return 0;
+        }
+    }
+    catch(arfs::exceptions::BadCommandLineFormatting& e)
+    {
+        std::cout << "Error : " << e.what() << std::endl;
+        return -1;
+    }
+
+    arfs::Video video;
+    if(camId != -1)
+        video = arfs::Video(camId, 1, 1);
+    else if(!videoFile.empty())
+        video = arfs::Video(videoFile, 0.5, 0.5);
+    else
+    {
+        std::cout << "No video given. You should use -w or -v to specify an input video." << std::endl;
+        return -1;
+    }
 
     arfs::Camera camera{};
 //    camera.calibrateAndSave("../resources/oneplus.cam",

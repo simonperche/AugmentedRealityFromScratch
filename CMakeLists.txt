@@ -111,7 +111,8 @@ set(SOURCE_FILES
         src/Camera.cpp
         src/Object.cpp
         src/Scene.cpp
-        src/Renderer.cpp)
+        src/Renderer.cpp
+        headers/CommandLineParser.cpp)
 
 set(HEADERS_FILES
         headers/Video.hpp
@@ -124,7 +125,8 @@ set(HEADERS_FILES
         headers/Object.hpp
         headers/Scene.hpp
         headers/Renderer.hpp
-        headers/exceptions.hpp)
+        headers/exceptions.hpp
+        headers/CommandLineParser.hpp)
 
 add_executable(${APP_NAME} ${SOURCE_FILES} ${HEADERS_FILES})
 
