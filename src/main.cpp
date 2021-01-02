@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     int camId{-1};
     std::string videoFile{};
     std::string cameraParametersFile{};
+    std::string tagFilename{};
 
     // Arguments parsing
     try
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
         cmdParser.getArgValue<int>("-w", "--webcam", camId);
         cmdParser.getArgValue<std::string>("--video", "-v", videoFile);
         cmdParser.getArgValue<std::string>("--camera-parameters", "-p", cameraParametersFile);
+        cmdParser.getArgValue<std::string>("--tag", "-t", tagFilename);
 
         if(cmdParser.getFlagValue("--help", "-h"))
         {
@@ -40,6 +42,7 @@ int main(int argc, char *argv[])
             std::cout << "Video : " << std::endl;
             std::cout << "\t[--webcam | -w] id : use webcam as video input. The first webcam is id 0." << std::endl
                       << "\t[--video | -v] filename : use video file as input. Filename is required." << std::endl
+                      << "\t[--tag | -t] filename : filename of tag to recognize. Must be an image." << std::endl
                       << "\t[--camera-parameters | -p] filename : use filename file from camera calibration." << std::endl;
 
             std::cout << "Calibration (optional) :" << std::endl;
@@ -67,14 +70,21 @@ int main(int argc, char *argv[])
 //                            std::array<int,2>{11,11},
 //                            "../resources/images_calibration/", 0.2);
 
-    if(!cameraParametersFile.empty())
-        camera.loadParameters(cameraParametersFile);
-    else
+    if(cameraParametersFile.empty())
     {
         std::cout << "You should specify camera parameters with --camera-parameters or -p, "
                      "or calibrate your camera with --calibrate or -c.";
         return -1;
     }
+    camera.loadParameters(cameraParametersFile);
+
+
+    if(tagFilename.empty())
+    {
+        std::cout << "You should specify a tag filename with --tag or -t." << std::endl;
+        return -1;
+    }
+    auto tagDetection = arfs::TagDetection(arfs::ARTag(tagFilename), true);
 
     arfs::Video video;
     if(camId != -1)
@@ -87,7 +97,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    auto tagDetection = arfs::TagDetection(arfs::ARTag("../resources/marker.jpeg"));
     auto scene = arfs::Scene(camera);
 
     scene.addObject("../resources/monkey.obj", "../resources/monkey.mtl");
