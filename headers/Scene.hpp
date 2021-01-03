@@ -25,6 +25,14 @@ namespace arfs
         {};
 
         /**
+         * @brief Load a scene from .scene config file
+         * @details .scene file is a csv file containing the description of the scene.
+         * Fields are obj_filepath,mtl_filepath,scaling,x_position,y_position,z_position,[DEG/RAD],x_rotation,y_rotation,z_rotation
+         * @param filename
+         */
+        void loadFromFile(const std::string& filename);
+
+        /**
          * @brief Add an object to the scene using OBJLoader
          * @param objFilename filepath of .obj
          * @param mtlFilename filepath of .mtl (optional)

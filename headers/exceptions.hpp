@@ -34,6 +34,15 @@ namespace arfs::exceptions
     private:
         std::string m_message;
     };
+
+    class IllFormedFile : public std::exception
+    {
+    public:
+        virtual const char *what() const noexcept
+        {
+            return "file is ill-formed";
+        }
+    };
 }
 
 #endif //AR_EXCEPTIONS_HPP

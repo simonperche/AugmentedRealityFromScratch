@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     std::string videoFile{};
     std::string cameraParametersFile{};
     std::string tagFilename{};
+    std::string sceneFilename{};
 
     bool calibrateCamera;
     std::array<int, 2> checkerboardSize{0,0};
@@ -39,6 +40,7 @@ int main(int argc, char *argv[])
         cmdParser.getArgValue<std::string>("--video", "-v", videoFile);
         cmdParser.getArgValue<std::string>("--camera-parameters", "-p", cameraParametersFile);
         cmdParser.getArgValue<std::string>("--tag", "-t", tagFilename);
+        cmdParser.getArgValue<std::string>("--scene", "-s", sceneFilename);
 
         calibrateCamera = cmdParser.getFlagValue("--calibrate", "-c");
         cmdParser.getArgValue<int>("--checker-size-width", "", checkerboardSize[0]);
@@ -53,7 +55,8 @@ int main(int argc, char *argv[])
             std::cout << "\t[--webcam | -w] id : use webcam as video input. The first webcam is id 0." << std::endl
                       << "\t[--video | -v] filename : use video file as input. Filename is required." << std::endl
                       << "\t[--tag | -t] filename : filename of tag to recognize. Must be an image." << std::endl
-                      << "\t[--camera-parameters | -p] filename : use filename file from camera calibration." << std::endl;
+                      << "\t[--camera-parameters | -p] filename : use filename file from camera calibration." << std::endl
+                      << "\t[--scene | -s] filename : use filename for scene configuration" << std::endl;
 
             std::cout << "Calibration (optional) :" << std::endl;
             std::cout << "\t[--calibrate | -c] : calibrate the camera." << std::endl
@@ -117,16 +120,32 @@ int main(int argc, char *argv[])
 
     auto scene = arfs::Scene(camera);
 
-    scene.addObject("../resources/monkey.obj", "../resources/monkey.mtl");
-    scene.addObject("../resources/low_poly_fox.obj", "../resources/low_poly_fox.mtl");
+    if(!sceneFilename.empty())
+    {
+        try
+        {
+            scene.loadFromFile(sceneFilename);
+        }
+        catch(arfs::exceptions::IllFormedFile& e)
+        {
+            std::cout << "Error : " << e.what() << std::endl << "Please check .scene config file." << std::endl;
+            return -1;
+        }
+    }
+    else // Load default scene
+    {
+        scene.addObject("../resources/monkey.obj", "../resources/monkey.mtl");
+        scene.addObject("../resources/low_poly_fox.obj", "../resources/low_poly_fox.mtl");
 
-    scene.rotate(arfs::Utils::Geometry::degToRad(90),
-                 arfs::Utils::Geometry::degToRad(0),
-                 arfs::Utils::Geometry::degToRad(180));
-    scene.position(0, 100, 0, 0);
-    scene.position(1, -100, 0, 0);
-    scene.scale(60);
-    scene.scale(1, 2.5);
+        scene.rotate(arfs::Utils::Geometry::degToRad(90),
+                     arfs::Utils::Geometry::degToRad(0),
+                     arfs::Utils::Geometry::degToRad(180));
+        scene.position(0, 100, 0, 0);
+        scene.position(1, -100, 0, 0);
+        scene.scale(60);
+        scene.scale(1, 2.5);
+
+    }
 
     time_t tstart, tend;
     tstart = time(0);

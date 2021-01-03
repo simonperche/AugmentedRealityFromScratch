@@ -1,0 +1,7 @@
+# An example config file for scene in ARFS application
+# All fields are optional exept obj_filepath. However, you must put ',' to indicate empty field. Default value are 1 for scaling, RAD for angle type and 0 for all other fields.
+# Filepath must be relative path (relative to the .scene file).
+# obj_filepath,mtl_filepath,scaling,x_position,y_position,z_position,[DEG/RAD],x_rotation,y_rotation,z_rotation
+
+monkey.obj,monkey.mtl,60,100,0,0,DEG,90,0,180
+low_poly_fox.obj,,2.5,-100,,,DEG,90,0,180
