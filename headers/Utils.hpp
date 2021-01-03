@@ -17,16 +17,48 @@ namespace arfs
 
     namespace Utils
     {
+        /**
+         * @brief Split a string using delimiter.
+         * @param s original string
+         * @param delimiter
+         * @return array of string representing the original string divided by delimiters
+         */
         std::vector<std::string> split(std::string s, const char& delimiter);
+
+        /**
+         * @brief Check if escape is pressed at this moment.
+         * @return true if escape is pressed, false otherwise
+         */
+        bool escIsPressed();
 
         namespace Geometry
         {
             constexpr double PI = 3.141592653589793238463;
 
-            double angleBetween(const cv::Point& v1, const cv::Point& v2, AngleType type = AngleType::RAD);
+            /**
+             * @brief Calculate angle between two points
+             * @param p1 first point
+             * @param p2 second point
+             * @param type type of return angle (deg or rad)
+             * @return the angle as type (deg or rad)
+             */
+            double angleBetween(const cv::Point& p1, const cv::Point& p2, AngleType type = AngleType::RAD);
 
+            /**
+             * @brief Calculate angle between 3D vectors
+             * @param v1 first vector
+             * @param v2 second vector
+             * @param type type of return angle (deg or rad)
+             * @return the angle as type (deg or rag)
+             */
             double angleBetween(const cv::Vec3d& v1, const cv::Vec3d& v2, AngleType type = AngleType::RAD);
 
+            /**
+             * @brief Calculate the norm bewteen two points
+             * @param p1 first point
+             * @param p2 second point
+             * @return norm
+             */
             // cv::norm is not implemented with two points
             double norm(const cv::Point& p1, const cv::Point& p2);
 
@@ -36,32 +68,46 @@ namespace arfs
 
         namespace Image
         {
+            /**
+             * @brief Save image as filename.
+             * @param img
+             * @param filename
+             */
             void saveImage(const cv::Mat& img, const std::string& filename);
 
-            void showImage(const cv::Mat& img, const std::string& winname);
+            /**
+             * @brief Display image on screen.
+             * @param img
+             * @param winName
+             */
+            void showImage(const cv::Mat& img, const std::string& winName);
 
+            /**
+             * @brief Load an image from filename.
+             * @param filename
+             * @return Mat containing the image
+             */
             cv::Mat loadImage(const std::string& filename);
         }
 
         namespace CV
         {
             /**
-            * Estimate the homography matrix between two sets of four points
+            * Estimate the homography matrix between two sets of points
             * @return homography 3x3 matrix
             * @param srcPoints
             * @param dstPoints
             */
             cv::Mat estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints);
 
-            cv::Mat wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix);
-
             /**
-            * Apply a gaussian elimination on a matrix
-            * @param matrix matrix to solve
-            * @param rows rows count on matrix
-            * @param cols cols count on matrix
-            */
-            static void gaussJordanElimination(cv::Mat& matrix, int rows, int cols);
+             * @brief Wrap an image using an homography matrix
+             * @param src source image
+             * @param size size of output image
+             * @param matrix transformation matrix (usually homography)
+             * @return image of indicated size, wrapped version of source image
+             */
+            cv::Mat wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix);
         }
     }
 }

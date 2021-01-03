@@ -11,13 +11,30 @@
 
 namespace arfs
 {
+    /**
+     * @brief Tracking wrapper of opencv tracking module
+     */
     class Tracking
     {
     public:
+        /**
+         * @brief Add tracking points. Need an frame to initialize trackers.
+         * @param points
+         * @param initFrame
+         */
         void addPoints(const std::vector<cv::Point>& points, const cv::Mat& initFrame);
 
+        /**
+         * @brief Update the tracking and return new points
+         * @param frame frame used to update the tracked points
+         * @return new positions of tracked points
+         */
         std::vector<cv::Point> update(const cv::Mat& frame);
 
+        /**
+         * @brief Draw tracked points on frame.
+         * @param frame
+         */
         void showTrackedPoint(const cv::Mat& frame);
 
         void clear()

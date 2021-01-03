@@ -10,7 +10,7 @@
 
 namespace arfs::Utils
 {
-    std::vector<std::string> Utils::split(std::string s, const char& delimiter)
+    std::vector<std::string> split(std::string s, const char& delimiter)
     {
         std::vector<std::string> split_strings{};
         size_t pos;
@@ -26,9 +26,14 @@ namespace arfs::Utils
         return split_strings;
     }
 
+    bool escIsPressed()
+    {
+        return cv::waitKey(1) == 27;
+    }
+
     namespace Geometry
     {
-        double Geometry::angleBetween(const cv::Point& p1, const cv::Point& p2, AngleType type)
+        double angleBetween(const cv::Point& p1, const cv::Point& p2, AngleType type)
         {
             double angle = acos(p1.dot(p2) / (cv::norm(p1) * cv::norm(p2)));
             if(type == AngleType::DEG)
@@ -37,7 +42,7 @@ namespace arfs::Utils
             return angle;
         }
 
-        double Geometry::angleBetween(const cv::Vec3d& v1, const cv::Vec3d& v2, AngleType type)
+        double angleBetween(const cv::Vec3d& v1, const cv::Vec3d& v2, AngleType type)
         {
             double angle = acos(v1.dot(v2) / (cv::norm(v1) * cv::norm(v2)));
             if(type == AngleType::DEG)
@@ -46,7 +51,7 @@ namespace arfs::Utils
             return angle;
         }
 
-        double Geometry::norm(const cv::Point& p1, const cv::Point& p2)
+        double norm(const cv::Point& p1, const cv::Point& p2)
         {
             return cv::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
         }
@@ -55,17 +60,17 @@ namespace arfs::Utils
     namespace Image
     {
 
-        void Image::saveImage(const cv::Mat& img, const std::string& filename)
+        void saveImage(const cv::Mat& img, const std::string& filename)
         {
             cv::imwrite(filename, img);
         }
 
-        void Image::showImage(const cv::Mat& img, const std::string& winname)
+        void showImage(const cv::Mat& img, const std::string& winName)
         {
-            cv::imshow(winname, img);
+            cv::imshow(winName, img);
         }
 
-        cv::Mat Image::loadImage(const std::string& filename)
+        cv::Mat loadImage(const std::string& filename)
         {
             //TODO: add custom exception with image not found
             return cv::imread(filename);
@@ -74,7 +79,19 @@ namespace arfs::Utils
 
     namespace CV
     {
-        cv::Mat CV::wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix)
+        // Define an unnamed namespace for private usage
+        namespace
+        {
+            /**
+            * Apply a gaussian elimination on a matrix
+            * @param matrix matrix to solve
+            * @param rows rows count on matrix
+            * @param cols cols count on matrix
+            */
+            void gaussJordanElimination(cv::Mat& matrix, int rows, int cols);
+        }
+
+        cv::Mat wrapPerspective(const cv::Mat& src, const cv::Size& size, const cv::Mat& matrix)
         {
             auto dst = cv::Mat(size, CV_8UC3);
             cv::Mat matrixInv = matrix.inv();
@@ -104,7 +121,7 @@ namespace arfs::Utils
             return dst;
         }
 
-        cv::Mat CV::estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints)
+        cv::Mat estimateHomography(const std::vector<cv::Point>& srcPoints, const std::vector<cv::Point>& dstPoints)
         {
             cv::Mat matrix = cv::Mat(3, 3, CV_64F);
             std::array<double, 72> data{double(-srcPoints[0].x), double(-srcPoints[0].y), -1.0, 0.0, 0.0, 0.0,
@@ -157,68 +174,70 @@ namespace arfs::Utils
             return matrix;
         }
 
-
-        void CV::gaussJordanElimination(cv::Mat& matrix, int rows, int cols)
+        namespace
         {
-            //Pivot initialization
-            int h = 0;
-            int k = 0;
-
-            while(h < rows && k < cols)
+            void gaussJordanElimination(cv::Mat& matrix, int rows, int cols)
             {
-                /* Find the k-th pivot */
-                int i_max = h;
-                for(int i = h + 1; i < rows; i++)
-                {
-                    if(fabs(matrix.at<double>(i, k)) > fabs(matrix.at<double>(i_max, k)))
-                    {
-                        i_max = i;
-                    }
-                }
-                if(matrix.at<double>(i_max, k) == 0)
-                {
-                    // No pivot, jump this column
-                    k = k + 1;
-                }
-                else
-                {
-                    if(i_max != h)
-                    {
-                        for(int l = 0; l < cols; l++)
-                        {
-                            double save = matrix.at<double>(h, l);
-                            matrix.at<double>(h, l) = matrix.at<double>(i_max, l);
-                            matrix.at<double>(i_max, l) = save;
-                        }
-                    }
+                //Pivot initialization
+                int h = 0;
+                int k = 0;
 
-                    double norm = matrix.at<double>(h, k);
-                    for(int l = 0; l < cols; l++)
-                    {
-                        matrix.at<double>(h, l) /= norm;
-                    }
-
+                while(h < rows && k < cols)
+                {
+                    /* Find the k-th pivot */
+                    int i_max = h;
                     for(int i = h + 1; i < rows; i++)
                     {
-                        double f = matrix.at<double>(i, k) / matrix.at<double>(h, k);
-                        for(int j = k + 1; j < cols; j++)
+                        if(fabs(matrix.at<double>(i, k)) > fabs(matrix.at<double>(i_max, k)))
                         {
-                            matrix.at<double>(i, j) -= (matrix.at<double>(h, j)) * f;
+                            i_max = i;
                         }
                     }
+                    if(matrix.at<double>(i_max, k) == 0)
+                    {
+                        // No pivot, jump this column
+                        k = k + 1;
+                    }
+                    else
+                    {
+                        if(i_max != h)
+                        {
+                            for(int l = 0; l < cols; l++)
+                            {
+                                double save = matrix.at<double>(h, l);
+                                matrix.at<double>(h, l) = matrix.at<double>(i_max, l);
+                                matrix.at<double>(i_max, l) = save;
+                            }
+                        }
 
-                    h = h + 1;
-                    k = k + 1;
+                        double norm = matrix.at<double>(h, k);
+                        for(int l = 0; l < cols; l++)
+                        {
+                            matrix.at<double>(h, l) /= norm;
+                        }
+
+                        for(int i = h + 1; i < rows; i++)
+                        {
+                            double f = matrix.at<double>(i, k) / matrix.at<double>(h, k);
+                            for(int j = k + 1; j < cols; j++)
+                            {
+                                matrix.at<double>(i, j) -= (matrix.at<double>(h, j)) * f;
+                            }
+                        }
+
+                        h = h + 1;
+                        k = k + 1;
+                    }
+
                 }
 
-            }
-
-            //Back substitution, to transform the matrix in row echelon form in a system
-            for(int i = rows - 2; i >= 0; i--)
-            {
-                for(int j = i + 1; j < cols - 1; j++)
+                //Back substitution, to transform the matrix in row echelon form in a system
+                for(int i = rows - 2; i >= 0; i--)
                 {
-                    matrix.at<double>(i, rows) -= matrix.at<double>(i, j) * matrix.at<double>(j, rows);
+                    for(int j = i + 1; j < cols - 1; j++)
+                    {
+                        matrix.at<double>(i, rows) -= matrix.at<double>(i, j) * matrix.at<double>(j, rows);
+                    }
                 }
             }
         }

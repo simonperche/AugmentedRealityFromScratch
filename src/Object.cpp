@@ -24,9 +24,9 @@ namespace arfs
         m_scale = scale;
     }
 
-    void Object::position(double xTranslation, double yTranslation, double zTranslation)
+    void Object::position(double x, double y, double z)
     {
-        m_position = cv::Vec3d(xTranslation, yTranslation, zTranslation);
+        m_position = cv::Vec3d(x, y, z);
     }
 
     void Object::rotate(double xAngle, double yAngle, double zAngle)

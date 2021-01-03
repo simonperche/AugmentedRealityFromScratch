@@ -39,11 +39,6 @@ namespace arfs
         return resized;
     }
 
-    bool Video::escIsPressed()
-    {
-        return cv::waitKey(1) == 27;
-    }
-
     void Video::restartFromBeginning()
     {
         m_video.set(cv::CAP_PROP_POS_FRAMES, 0);

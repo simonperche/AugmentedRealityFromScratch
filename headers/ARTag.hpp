@@ -11,11 +11,23 @@
 
 namespace arfs
 {
+    /**
+     * @brief An ARTag containing a 64-bit code (like ArUco tag).
+     * @details This class permits to get the code of an ARTag using an image. It may be loaded from a file or a cv::Mat.
+     */
     class ARTag
     {
     public:
+        /**
+         * @brief Construct ARTag using filename as image.
+         * @param filename saved image
+         */
         explicit ARTag(const std::string& filename);
 
+        /**
+         * @brief Construct ARTag using img as image.
+         * @param img
+         */
         explicit ARTag(cv::Mat img);
 
         std::array<int, 64> getCode() const

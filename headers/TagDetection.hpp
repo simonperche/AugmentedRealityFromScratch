@@ -13,12 +13,26 @@
 
 namespace arfs
 {
+    /**
+     * @brief Perform a tag detection algorithm on an image.
+     */
     class TagDetection
     {
     public:
+        /**
+         * @brief Construct a tag detection with the tag to recognize.
+         * @param tag
+         * @param verbose shows debug information if true (default false)
+         */
         explicit TagDetection(const arfs::ARTag& tag, bool verbose = false) : m_tagToDetect(tag), m_verbose(verbose), m_perfectMatchingTagFound(false), m_requirementLevel(55)
         {};
 
+        /**
+         * @brief Update the detected tag.
+         * @details Use a tracking solution to track tag along the image. Perform a full detection with the first image and if the tracking is lost.
+         * @param frame
+         * @return the detected tag
+         */
         std::vector<cv::Point> update(const cv::Mat& frame);
 
     private:

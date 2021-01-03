@@ -112,7 +112,7 @@ set(SOURCE_FILES
         src/Object.cpp
         src/Scene.cpp
         src/Renderer.cpp
-        headers/CommandLineParser.cpp)
+        src/CommandLineParser.cpp)
 
 set(HEADERS_FILES
         headers/Video.hpp

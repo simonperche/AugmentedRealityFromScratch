@@ -18,7 +18,6 @@
 
 int main(int argc, char *argv[])
 {
-    //TODO: documentation (doxygen?)
     //TODO: Add config file for the scene
 
     auto cmdParser = arfs::CommandLineParser(argc, argv);
@@ -142,7 +141,7 @@ int main(int argc, char *argv[])
     {
         frame = video.getNextFrame();
 
-        if(frame.empty() || arfs::Video::escIsPressed())
+        if(frame.empty() || arfs::Utils::escIsPressed())
             break;
 
         auto renderFrame = frame.clone();

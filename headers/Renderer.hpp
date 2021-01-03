@@ -8,18 +8,21 @@
 #include <opencv2/core/mat.hpp>
 #include "Scene.hpp"
 
-namespace arfs
+namespace arfs::Renderer
 {
-    class Renderer
-    {
-    public:
-        static void render(cv::Mat& frame, const arfs::Scene& scene);
-        static void drawPolygon(const cv::Mat& frame, const std::vector<cv::Point>& points);
+    /**
+     * @brief Render a scene on a frame.
+     * @param frame
+     * @param scene
+     */
+    void render(cv::Mat& frame, const arfs::Scene& scene);
 
-    private:
-        static void augmentObjects(const cv::Mat& frame, const std::vector<arfs::Object>& objects, const arfs::Camera& camera);
-        static std::vector<cv::Point2i> projectPoint(const std::vector<cv::Point3d>& points, const cv::Mat& projectionMatrix);
-    };
+    /**
+     * @brief Draw a polygon on a frame.
+     * @param frame
+     * @param points array of polygon points
+     */
+    void drawPolygon(const cv::Mat& frame, const std::vector<cv::Point>& points);
 }
 
 #endif //AR_RENDERER_HPP
