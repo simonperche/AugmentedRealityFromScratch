@@ -4,4 +4,4 @@
 # obj_filepath,mtl_filepath,scaling,x_position,y_position,z_position,[DEG/RAD],x_rotation,y_rotation,z_rotation
 
 monkey.obj,monkey.mtl,60,100,0,0,DEG,90,0,180
-low_poly_fox.obj,,2.5,-100,,,DEG,90,0,180
+deer.obj,deer.mtl,45,-100,,,DEG,90,0,180
