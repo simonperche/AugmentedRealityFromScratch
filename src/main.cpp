@@ -18,8 +18,6 @@
 
 int main(int argc, char *argv[])
 {
-    //TODO: Add config file for the scene
-
     auto cmdParser = arfs::CommandLineParser(argc, argv);
 
     int camId{-1};
@@ -116,7 +114,7 @@ int main(int argc, char *argv[])
         std::cout << "You should specify a tag filename with --tag or -t." << std::endl;
         return -1;
     }
-    auto tagDetection = arfs::TagDetection(arfs::ARTag(tagFilename));
+    auto tagDetection = arfs::TagDetection(arfs::ARTag(tagFilename), true);
 
     auto scene = arfs::Scene(camera);
 
@@ -135,7 +133,7 @@ int main(int argc, char *argv[])
     else // Load default scene
     {
         scene.addObject("../resources/monkey.obj", "../resources/monkey.mtl");
-        scene.addObject("../resources/low_poly_fox.obj", "../resources/low_poly_fox.mtl");
+        scene.addObject("../resources/deer.obj", "../resources/deer.mtl");
 
         scene.rotate(arfs::Utils::Geometry::degToRad(90),
                      arfs::Utils::Geometry::degToRad(0),
