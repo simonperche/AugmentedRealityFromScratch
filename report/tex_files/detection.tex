@@ -1,97 +1,206 @@
 \newpage
 \addpart{Détection du tag}
 
-    \section{Estimation de la matrice d'homographie}
+La détection du tag est une partie très importante de cette application de réalité augmentée. L'objectif est de récupérer les coordonnées du tag dans la caméra pour avoir les informations sur l'orientation et la distance de la scène a afficher sur l'image.
 
-    Bien qu'OpenCV dispose de méthodes pour estimer une matrice d'homographie entre deux jeux de points, nous avons décidé de réimplémenter une solution d'estimation d'homographie.
+    \section{Détection complète}
 
-    La méthode d'estimation d'homographie se base sur la résolution d'un pivot de Gauss.
+    Dans les grandes lignes, la détection du tag consiste à récupérer toutes les formes qui pourraient correspondre au tag dans l'image, puis trouver la forme qui correspond au véritable tag que nous cherchons. L'orientation et la distance du tag détecté servira ensuite pour projeter les objets dans la scène.
 
-    On cherche pour chaque couple de points $p_i \leftrightarrow p_{i}' $ la matrice H telle que :
+    Une fois le tag détecté, l'application tentera de le tracker lors des images suivantes de la vidéo, afin de gagner en temps de calcul en évitant de refaire tout le processus, sauf si le tracking ne parvient pas à suivre le tag (mouvement trop important de la caméra par exemple).
 
-    $ p_i = Hp_i' $
+        \subsection{Extraction des tags potentiels}
 
-    $ p_i $ correspondant aux points de départ.
-    $ p'_i $ correspondant aux points d'arrivés.
+        La première étape consiste à sortir de l'image les quadrilatères qui peuvent potentiellement correspondre à des tags.
 
-    Soit pour tout point $i$ :
+        Pour cela, un prétraitement est d'abord effectué sur l'image. L'image est convertie en niveau de gris puis binarisée à l'aide d'un seuillage adaptatif (une valeur de seuil sera determinée en fonction des régions, qui peut différer donc d'une région à l'autre).
 
-    \[
-        \begin{bmatrix}
-            x_i \\
-            y_i \\
-            1      
-        \end{bmatrix}
-        = 
-        \begin{bmatrix}
-            h1 &  h2 & h3 \\
-            h4  & h5 & h6 \\
-            h7 & h8 & h9      
-        \end{bmatrix} 
+        \begin{figure}[!h]
+            \centering
+            \includegraphics[scale=0.25]{img/threshold.png}
+            \caption{Image seuillée}
+        \end{figure}
+
+        Une fois l'image binarisée, nous pouvons effectuer une détection de contours sur cette dernière.
+
+        La méthode \textit{findContours}, que nous utilisons d'OpenCV, renvoie pour chaque contour détecté une liste de points. Nous souhaitons à partir de ces points créer une forme qui va recouvrir le contour. Pour cela, nous allons générer une enveloppe convexe pour ces points.
+
+        C'est à dire que nous allons englober de manière la plus optimale possible tous les points communs à un contour dans une forme convexe.
+
+        \begin{figure}[!h]
+            \centering
+            \includegraphics[scale=0.25]{img/convex_hull.png}
+            \caption{Chaque contour de l'image est englobé}
+        \end{figure}
+
+        Certains contours détectés peuvent être formés de manières complexes (enchaînements de points pour au final une polygone avec un petit nombre de côtés) et viendrons fausser la détection de contours quadrilatères. Pour gérer cela, nous ajoutons une étape où les points proches entre eux ou alignés sur un contour sont supprimés.
+
+        Avec des contours désormais nettoyés, nous pouvons récupérer tous les contours de forme quadrilatère, qui correspondent à tous les candidats pour être le tag que nous recherchons.
+
+        \subsection{Identification du tag correct}
+
+        Tous les tags candidats sont ensuite comparés au modèle de tag que nous voulons reconnaître.
+
+        \subsubsection{Homographie}
+
+        Le candidat sur l'image est déformé par rapport au modèle de tag qui sera nécessaire afin de comparer les deux images.
+
+        Une première étape est en conséquence nécessaire pour redresser cette image afin qu'elle soit de la même taille que l'image à comparer.
+
+        Nous allons pour ceci estimer l'homographie entre l'image avec le candidat déformé et un carré parfait, la forme qui est visée.
+
+        \begin{figure}[h]
+            \centering
+            \subfloat[][Tag candidat déformé]{\includegraphics[width=0.48\linewidth]{img/beforewrap.png}}
+            \hspace{.02\textwidth}
+            \subfloat[][Forme visée]{\includegraphics[width=0.38\linewidth]{img/tag_homography_target.png}}
+            \caption{On cherche a estimer l'homographie entre ces deux représentations du tag candidat pour le redresser}
+        \end{figure}
+
+        L'estimation de l'homographie est en effet une transformation entre deux plans qui nous permettera de stocker dans une matrice d'homographie les informations relatives notamment à la rotation et translation entre deux plans.
+
+        \textbf{\textit{Estimation de la matrice d'homographie}}
+
+        Bien qu'OpenCV dispose de méthodes pour estimer une matrice d'homographie entre deux jeux de points, nous avons décidé de réimplémenter une solution d'estimation d'homographie.
+
+        Comme vu précédemment, on cherche à établir la transformation entre deux images. C'est à dire, pour chaque couple de points $p_i \leftrightarrow p_{i}' $, nous cherchons la matrice $H$ telle que :
+    
+        \begin{center}
+            $ p_i = Hp_i' $            
+        \end{center}
+
+        Avec :
+
+        \begin{itemize}
+            \item $ p_i $ correspondant aux points de départ, ou ici de l'image déformée.
+            \item $ p'_i $ correspondant aux points d'arrivés, ou ici d'un cadre droit, la forme visée.
+        \end{itemize}
+            
+        Nous pouvons développer donc pour tout point $p_i$ :
+    
+        \[
+            \begin{pmatrix}
+                x_i \\
+                y_i \\
+                1      
+            \end{pmatrix}
+            = 
+            \begin{pmatrix}
+                h1 & h2 & h3 \\
+                h4 & h5 & h6 \\
+                h7 & h8 & h9      
+            \end{pmatrix} 
+            \times
+            \begin{pmatrix}
+                x'_i \\
+                y'_i \\
+                1      
+            \end{pmatrix}
+            \]
+        
+        L'objectif est donc de déterminer la matrice H telle que :
+    
+        \begin{center}
+        $ H = \begin{pmatrix} h1 & h2 & h3 \\ h4 & h5 & h6 \\ h7 & h8 & h9 \end{pmatrix} $
+        \end{center}
+    
+        On peut réécrire l'estimation de l'homographie dans un premier temps pour un point de cette manière :
+
+        \begin{center}
+            $x_i = \frac{h1x'_i + h2y'_i + h3}{h7x'_i + h8y'_i + h9} $  
+        \end{center}
+    
+        \begin{center}
+            $y_i = \frac{h4x'_i + h5y'_i + h6}{h7x'_i + h8y'_i + h9} $
+        \end{center}
+    
+        Qui est égal à :
+    
+        \begin{center}
+            $ x'_ih1 + y'_ih2 + h3 - x'_i x_ih7 - y'_ix_ih8 - x_ih9 = 0 $
+    
+            $ x'_ih4 + y'_ih5 + h6 - x'_iy_ih7 - y'_iy_ih8 - y_ih9 = 0 $
+        \end{center}
+
+        Nous nous retrouvons sous la forme d'un système de 2 équations à 9 inconnues.
+
+        Un couple de point mène donc à deux équations qui permettent de résoudre $H$.
+    
+        Nous pouvons d'ailleurs par avance résoudre h9, car dans le cas d'une homographie, nous avons toujours $h9 = 1$.
+    
+        Il nous reste huit inconnues à résoudre : 4 points sont alors nécessaires pour générer 8 équations dans le système, dont on considère $h9$ comme déjà résolu : 
+
+        \[
+        \begin{pmatrix} 
+            x_1 & y_1 & 1 & 0 & 0 & 0 & -x_1 x'_1 & -y_1 x'_1 \\ 
+            0 & 0 & 0 & x_1 & y_1 & 1 & -x_1 y'_1 & -y_1 y'_1 \\
+    
+            x_2 & y_2 & 1 & 0 & 0 & 0 & -x_2 x'_2 & -y_2 x'_2 \\ 
+            0 & 0 & 0 & x_2 & y_2 & 1 & -x_2 y'_2 & -y_2 y'_2 \\
+    
+            x_3 & y_3 & 1 & 0 & 0 & 0 & -x_3 x'_3 & -y_3 x'_3 \\ 
+            0 & 0 & 0 & x_3 & y_3 & 1 & -x_3 y'_3 & -y_3 y'_3 \\
+    
+            x_4 & y_4 & 1 & 0 & 0 & 0 & -x_4 x'_4 & -y_4 x'_4 \\ 
+            0 & 0 & 0 & x_4 & y_4 & 1 & -x_4 y'_4 & -y_4 y'_4
+        \end{pmatrix} 
         \times
-        \begin{bmatrix}
-            x'_i \\
-            y'_i \\
-            1      
-        \end{bmatrix}
+        \begin{pmatrix} h1 \\ h2 \\ h3 \\ h4 \\ h5 \\h6 \\ h7 \\ h8 \end{pmatrix}
+        =
+        \begin{pmatrix} x'_1 \\ y'_1 \\ x'_2 \\ y'_2 \\ x'_3 \\ y'_3 \\ x'_4 \\ y'_4 \end{pmatrix} 
         \]
     
-    L'objectif est donc de déterminer la matrice H telle que :
+        Nous disposons de ces couples de points dans notre cas car nous avons déjà détecté d'une part les coins du tag candidat que l'on cherche à redresser, et d'autre part nous connaissons déjà les coordonnées des points d'arrivée, sous la forme d'un carré. Nous pouvons donc créer ce système d'équation à partir de ces quatre couples de points.
 
-    \begin{center}
-    $ H = \begin{pmatrix} h1 & h2 & h3 \\ h4 & h5 & h6 \\ h7 & h8 & h9 \end{pmatrix} $
-    \end{center}
+        Un pivot de Gauss est réalisé sur ce système d'équations. Une fois ce pivot résolu, nous obtenons une matrice en "row echelon form", c'est à dire :
+    
+        \begin{itemize}
+            \item Toutes les lignes qui ne sont pas entièrement constituées de 0 commencent par un 1
+            \item Pour deux lignes non constituées que de 0, la valeur 1 de la ligne placée en haut de la matrice sera plus à gauche que le 1 de la ligne placée plus bas
+            \item Toutes les lignes avec seulement des 0 sont placées en bas
+        \end{itemize}
+    
+        Nous effectuons en conséquence une "back substitution" pour faire apparaître la solution sur la dernière colonne.
+    
+        La dernière colonne du système est donc la résolution de la matrice $H$, qui nous donne notre matrice d'homographie.
 
-    Pour cela, on peut réécrire l'estimation de l'homographie pour un point de cette manière :
+        Cette méthode permet d'estimer de manière fiable la matrice d'homographie entre l'image avec le candidat et une image droite.
 
-    $x_i = \frac{h1x'_i + h2y'_i + h3}{h7x'_i + h8y'_i + h9} $
+        
+            \subsubsection{Wrap Perspective}
 
-    $y_i = \frac{h4x'_i + h5y'_i + h6}{h7x'_i + h8y'_i + h9} $
+            Maintenant que la matrice d'homographie est établie, nous devons l'utiliser pour redresser l'image deformée dans la forme souhaitée.
 
-    Qui est égal à :
+            ... 
 
-    $ x'_ih0 + y'_ih1 + h2 - x'_i x_ih7 - y'_ix_ih8 - x_ih9 = 0 $
+            Cependant, dans le cas où la caméra aie prise l'image à l'envers, le tag candidat sera inversé par rapport au modèle à comparer. Le candidat, bien que valide, ne serait donc pas détecté. Pour contrer cela, nous allons par quatre fois effectuer une rotation sur l'ordre des points du contours pour tester toutes les orientations possibles.
 
-    $ x'_ih3 + y'_ih4 + h5 - x'_iy_ih7 - y'_iy_ih8 - y_ih9 = 0 $
 
-    Pour chaque point, nous avons donc deux équations qui permettent de résoudre $H$ sous la forme d'un système de 2 équations par point à 8 inconnues.
+        \begin{figure}[h]
+            \centering
+            \subfloat[][Image originale]{\includegraphics[width=0.48\linewidth]{img/beforewrap.png}}
+            \hspace{.02\textwidth}
+            \subfloat[][Tag potentiel extrait]{\includegraphics[width=0.35\linewidth]{img/afterwrap.png}}
+            \caption{Wrap Perspective sur la première image pour recadrer le tag potentiel}
+        \end{figure}
+            
 
-    Nous pouvons d'ailleurs par avance résoudre h9, car dans le cas d'une homographie, nous avons toujours $h9 = 1$.
+        \subsection{Résumé de la procédure}
 
-    Il nous reste huit inconnues à résoudre : 4 points sont alors nécessaires pour générer 8 équations dans le système, dont on considère $h9$ comme déjà résolu : 
+        Pour résumer, la détection du tag consiste à :
 
-    \[
-      \begin{pmatrix} 
-        x_1 & y_1 & 1 & 0 & 0 & 0 & -x_1 x'_1 & -y_1 x'_1 \\ 
-        0 & 0 & 0 & x_1 & y_1 & 1 & -x_1 y'_1 & -y_1 y'_1 \\
+        \begin{itemize}
+            \item Seuillage adaptatif sur l'image
+            \item Réaliser un convex hull sur les contours
+            \item Nettoyage des contours
+            \item Homographie
+            \item Wrap Perspective
+            \item Comparaison au modèle
+        \end{itemize}
 
-        x_2 & y_2 & 1 & 0 & 0 & 0 & -x_2 x'_2 & -y_2 x'_2 \\ 
-        0 & 0 & 0 & x_2 & y_2 & 1 & -x_2 y'_2 & -y_2 y'_2 \\
+    \subsection{Tracking}
 
-        x_3 & y_3 & 1 & 0 & 0 & 0 & -x_3 x'_3 & -y_3 x'_3 \\ 
-        0 & 0 & 0 & x_3 & y_3 & 1 & -x_3 y'_3 & -y_3 y'_3 \\
-
-        x_4 & y_4 & 1 & 0 & 0 & 0 & -x_4 x'_4 & -y_4 x'_4 \\ 
-        0 & 0 & 0 & x_4 & y_4 & 1 & -x_4 y'_4 & -y_4 y'_4
-    \end{pmatrix} 
-    \times
-    \begin{pmatrix} h1 \\ h2 \\ h3 \\ h4 \\ h5 \\h6 \\ h7 \\ h8 \end{pmatrix}
-    =
-    \begin{pmatrix} x'_1 \\ y'_1 \\ x'_2 \\ y'_2 \\ x'_3 \\ y'_3 \\ x'_4 \\ y'_4 \end{pmatrix} 
-    \]
-
-    Un pivot de Gauss est réalisé sur ce système d'équations. Une fois ce pivot résolu, nous obtenons une matrice en "row echelon form", c'est à dire :
-
-    \begin{itemize}
-        \item Toutes les lignes qui ne sont pas entièrement constituées de 0 commencent par un 1
-        \item Pour deux lignes non constituées que de 0, la valeur 1 de la ligne placée en haut de la matrice sera plus à gauche que le 1 de la ligne placée plus bas
-        \item Toutes les lignes avec seulement des 0 sont placées en bas
-    \end{itemize}
-
-    Nous effectuons en conséquence une "back substitution" pour faire apparaître la solution sur la dernière colonne.
-
-    La dernière colonne du système est donc la résolution de la matrice H, qui nous donne notre matrice d'homographie.
-
+    
     \section{Amélioration de la détection du tag}
 
     Après les premiers tests, nous avons remarqué que la détection du tag était efficiente lorsque le tag était bien visible quel que soit sa rotation ou sa taille, mais perdait en efficacité lors de mouvements plus brusques de la caméra, notamment à cause du flou de mouvement.
@@ -144,5 +253,9 @@
         \end{figure}
 
         Pour éviter de dégrader la détection des contours lors des frames suivantes du flux vidéo, nous ne réalisons pas de tracking sur le tag que nous avons détecté à l'aide des méthodes d'optimisations, car il sera éventuellement possible de trouver un tag parfait lors de la frame suivante, qui serait de meilleur qualité qu'un tag de moins bonne qualité tracké par rapport à celui de la frame précédante.
+
+        Cette petite marge d'erreur permet entre autre également de gérer partiellement l'occlusion du tag. En effet, un obstacle de petite taille cachant seulement quelques cases du tag peut ne pas poser de problème à sa détection, étant donné que les autres cases du tag seraient tout de même détectées.
+
+        IMAGE OCCULSION TAG ? 
 
         De plus, ces méthodes d'optimisations ne permettent pas de détecter le tag lorsqu'il sort de l'écran.
