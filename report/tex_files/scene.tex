@@ -1,14 +1,35 @@
 \newpage
-\addpart{Scène}
+\addpart{Rendu}
 
-\section{Caméra}
+    \section{Affichage des objets}
 
-\section{Rendu}
+        \subsection{Objets}
 
-    \subsection{Éclairage}
+            \subsubsection{Définition du format}
 
-    Une méthode d'ombrage plat a été implémentée afin de rendre l'apparence des objets plus réaliste.
+                
 
-    La lumière est représentée par un vecteur qui donne sa direction. La luminosité d'une face de l'objet est calculée en fonction de l'angle entre sa normale et la direction de la lumière.
+            \subsubsection{Matériaux}
 
-    \subsection{Matériaux}
+        \subsection{Scène}
+
+        La scène contiendra tous les objets 
+
+
+        \subsection{Éclairage}
+
+        Une méthode d'ombrage plat (\textit{Flat Shading}) a été implémentée afin de rendre l'apparence des objets plus réaliste.
+
+        La lumière est représentée par un vecteur qui donne sa direction. La luminosité d'une face de l'objet est calculée en fonction de l'angle entre sa normale et la direction de la lumière.
+
+        \begin{figure}[!h]
+            \centering
+            \includegraphics[scale=0.5]{img/flat_shading.png}
+            \caption{Ombrage plat sur les objets à partir d'une source lumineuse représentée par les flèches rouges}
+        \end{figure}
+
+    \section{Projection et caméra}
+
+        \subsection{Calibration}
+        
+        \subsection{Projection}
