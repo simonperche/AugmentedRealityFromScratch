@@ -4,6 +4,8 @@ Le but de ce projet est de construire une application de réalité augmentée "f
 
 L'application se basera tout de même sur OpenCV, une bibliothèque graphique libre spécialisée dans le traitement d'images.
 
-Notre application de réalité augmentée utilisera une méthode basée sur un repère, l'ARTag, qui consiste à placer un marqueur sur l'environnement, permettant à la caméra d'avoir des indications en temps réel sur l'orientation ou la distance des objets virtuels à intégrer à l'environnement selon la forme détectée du marqueur. 
+Plusieurs méthodes sont envisageables pour la création d'une application de réalité augmentée. Certaines méthodes basées sur de la reconstruction de scène 3D avec notamment de la Feature Extraction peuvent être très efficace et ne nécessitent pas de repère dans l'image, mais l'implémentation et les concepts à appréhender sont plus robustes.
+
+Notre application de réalité augmentée se basera sur une méthode basée sur un repère, l'ARTag, qui consiste à placer un marqueur sur l'environnement, permettant à la caméra d'avoir des indications en temps réel sur l'orientation ou la distance des objets virtuels à intégrer à l'environnement selon la forme détectée du marqueur. 
 
 Ce rapport est divisé en trois parties distinctes. Dans un premier temps, nous parlerons de comment détecter l'ARTag sur l'image. Deuxièmement, nous montrerons comment nous avons construit la scène autour de ce tag, à partir de la caméra jusqu'au rendu. Finalement, nous nous pencherons sur les axes d'améliorations de l'application, qui pourraient la rendre plus robuste et réaliste.

@@ -1,13 +1,13 @@
 \newpage
 \addpart{Détection du tag}
 
-La détection du tag est une partie très importante de cette application de réalité augmentée. L'objectif est de récupérer les coordonnées du tag dans la caméra pour avoir les informations sur l'orientation et la distance de la scène a afficher sur l'image.
+La détection du tag est une partie crutiale de cette application de réalité augmentée. L'objectif est de récupérer les coordonnées du tag dans la caméra pour avoir les informations sur l'orientation et la distance de la scène à projeter sur l'image.
 
     \section{Détection complète}
 
-    Dans les grandes lignes, la détection du tag consiste à récupérer toutes les formes qui pourraient correspondre au tag dans l'image, puis trouver la forme qui correspond au véritable tag que nous cherchons. L'orientation et la distance du tag détecté servira ensuite pour projeter les objets dans la scène.
+    Dans les grandes lignes, la détection du tag consiste à récupérer toutes les formes qui pourraient correspondre au tag dans l'image, puis de trouver la forme qui correspond au véritable tag que nous cherchons. L'orientation et la distance du tag détecté servira ensuite pour projeter les objets dans la scène.
 
-    Une fois le tag détecté, l'application tentera de le tracker lors des images suivantes de la vidéo, afin de gagner en temps de calcul en évitant de refaire tout le processus, sauf si le tracking ne parvient pas à suivre le tag (mouvement trop important de la caméra par exemple).
+    Une fois le tag détecté, l'application tentera de le tracker lors des images suivantes de la vidéo, afin de gagner en temps de calcul en évitant de refaire tout le processus. Si le tracking ne parvient pas à suivre le tag (mouvement trop important de la caméra par exemple), une nouvelle détection complète est effectuée.
 
         \subsection{Extraction des tags potentiels}
 
@@ -23,7 +23,7 @@ La détection du tag est une partie très importante de cette application de ré
 
         Une fois l'image binarisée, nous pouvons effectuer une détection de contours sur cette dernière.
 
-        La méthode \textit{findContours}, que nous utilisons d'OpenCV, renvoie pour chaque contour détecté une liste de points. Nous souhaitons à partir de ces points créer une forme qui va recouvrir le contour. Pour cela, nous allons générer une enveloppe convexe pour ces points.
+        La méthode \textit{findContours}, que nous utilisons fournie par OpenCV, renvoie pour chaque contour détecté une liste de points. Nous souhaitons à partir de ces points créer une forme qui va recouvrir le contour. Pour cela, nous allons générer une enveloppe convexe pour ces points.
 
         C'est à dire que nous allons englober de manière la plus optimale possible tous les points communs à un contour dans une forme convexe.
 
@@ -33,9 +33,11 @@ La détection du tag est une partie très importante de cette application de ré
             \caption{Chaque contour de l'image est englobé}
         \end{figure}
 
-        Certains contours détectés peuvent être formés de manières complexes (enchaînements de points pour au final une polygone avec un petit nombre de côtés) et viendrons fausser la détection de contours quadrilatères. Pour gérer cela, nous ajoutons une étape où les points proches entre eux ou alignés sur un contour sont supprimés.
+        Certains contours détectés peuvent être formés de manière complexe (enchaînements de points pour au final un polygone avec un petit nombre de côtés) et risquerons de fausser la détection de contours quadrilatères. Pour gérer cela, nous ajoutons une étape où les points proches entre eux ou alignés sur un contour sont supprimés.
 
-        Avec des contours désormais nettoyés, nous pouvons récupérer tous les contours de forme quadrilatère, qui correspondent à tous les candidats pour être le tag que nous recherchons.
+        EXPLIQUER ?
+
+        Avec ces contours désormais nettoyés, nous pouvons récupérer tous les contours de forme quadrilatère, qui correspondent à tous les candidats pour être le tag que nous recherchons.
 
         \subsection{Identification du tag correct}
 
@@ -45,9 +47,9 @@ La détection du tag est une partie très importante de cette application de ré
 
         Le candidat sur l'image est déformé par rapport au modèle de tag qui sera nécessaire afin de comparer les deux images.
 
-        Une première étape est en conséquence nécessaire pour redresser cette image afin qu'elle soit de la même taille que l'image à comparer.
+        Une première étape est en conséquence nécessaire pour redresser cette image afin qu'elle soit de la même taille et forme que l'image à comparer.
 
-        Nous allons pour ceci estimer l'homographie entre l'image avec le candidat déformé et un carré parfait, la forme qui est visée.
+        Nous allons pour ceci estimer l'homographie entre l'image avec le candidat déformé et un carré parfait, la forme qui est visée et qui correspond au modèle de tag que nous possédons.
 
         \begin{figure}[h]
             \centering
@@ -57,7 +59,7 @@ La détection du tag est une partie très importante de cette application de ré
             \caption{On cherche a estimer l'homographie entre ces deux représentations du tag candidat pour le redresser}
         \end{figure}
 
-        L'estimation de l'homographie est en effet une transformation entre deux plans qui nous permettera de stocker dans une matrice d'homographie les informations relatives notamment à la rotation et translation entre deux plans.
+        L'estimation de l'homographie est en effet une transformation entre deux plans qui nous permettera de stocker dans une matrice d'homographie les informations relatives notamment à la rotation et translation entre ces deux plans.
 
         \textbf{\textit{Estimation de la matrice d'homographie}}
 
@@ -124,7 +126,7 @@ La détection du tag est une partie très importante de cette application de ré
 
         Nous nous retrouvons sous la forme d'un système de 2 équations à 9 inconnues.
 
-        Un couple de point mène donc à deux équations qui permettent de résoudre $H$.
+        On observe du coup qu'un couple de point mène donc à deux équations qui permettent de résoudre $H$.
     
         Nous pouvons d'ailleurs par avance résoudre h9, car dans le cas d'une homographie, nous avons toujours $h9 = 1$.
     
@@ -190,12 +192,12 @@ La détection du tag est une partie très importante de cette application de ré
         Pour résumer, la détection du tag consiste à :
 
         \begin{itemize}
-            \item Seuillage adaptatif sur l'image
+            \item Réaliser un seuillage adaptatif sur l'image
             \item Réaliser un convex hull sur les contours
-            \item Nettoyage des contours
-            \item Homographie
-            \item Wrap Perspective
-            \item Comparaison au modèle
+            \item Nettoyer les contours
+            \item Estimer l'homographie
+            \item Effectuer la Wrap Perspective
+            \item Comparer au modèle de tag
         \end{itemize}
 
     \subsection{Tracking}
@@ -225,7 +227,7 @@ La détection du tag est une partie très importante de cette application de ré
 
         \subsection{Résultats}
 
-        Les deux méthodes indépendamment améliorent, mais pas de façon considérable les résultats, mais en les combinant nous parvenons à avoir une détection plus robuste.
+        Les deux méthodes indépendamment améliorent, mais pas de façon considérable, les résultats, mais en les combinant nous parvenons à avoir une détection plus robuste.
 
         \begin{figure}[!h]
             \begin{center}
