@@ -9,6 +9,22 @@ La détection du tag est une partie crutiale de cette application de réalité a
 
     Une fois le tag détecté, l'application tentera de le tracker lors des images suivantes de la vidéo, afin de gagner en temps de calcul en évitant de refaire tout le processus. Si le tracking ne parvient pas à suivre le tag (mouvement trop important de la caméra par exemple), une nouvelle détection complète est effectuée.
 
+        \subsection{Modèle de tag}
+
+        Le tag consiste à une grille en deux dimensions qui représente un code binaire matérialisé par des cases noires ou blanches.
+
+        \begin{figure}[!h]
+            \centering
+            \includegraphics[scale=0.25]{img/marker.jpeg}
+            \caption{Tag à détecter}
+        \end{figure}
+
+        Dans l'application, le tag est décomposé dans un tableau de 64 éléments qui comporte ces 0 ou ces 1.
+
+        Ce tableau est créé au lancement de l'application, avec l'image du tag passé en paramètre.
+
+        Le même processus est réalisé pour un tag qui sera détecté dans l'image. Son code sera lu puis découpé dans un tableau de 64 éléments et les deux tableaux seront comparés et déterminer si le contenu des deux codes correspond.  
+
         \subsection{Extraction des tags potentiels}
 
         La première étape consiste à sortir de l'image les quadrilatères qui peuvent potentiellement correspondre à des tags.
