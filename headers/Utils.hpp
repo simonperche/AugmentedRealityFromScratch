@@ -15,6 +15,9 @@ namespace arfs
         RAD
     };
 
+    /**
+     * @brief Utilities function
+     */
     namespace Utils
     {
         /**
@@ -31,6 +34,9 @@ namespace arfs
          */
         bool escIsPressed();
 
+        /**
+         * @brief Geometry functions
+         */
         namespace Geometry
         {
             constexpr double PI = 3.141592653589793238463;
@@ -66,6 +72,9 @@ namespace arfs
             { return deg * (PI / 180); }
         }
 
+        /**
+         * @brief Image manipulation function
+         */
         namespace Image
         {
             /**
@@ -90,6 +99,9 @@ namespace arfs
             cv::Mat loadImage(const std::string& filename);
         }
 
+        /**
+         * @brief Computer vision related functions
+         */
         namespace CV
         {
             /**

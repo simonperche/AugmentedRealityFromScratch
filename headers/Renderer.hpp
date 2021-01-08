@@ -8,6 +8,9 @@
 #include <opencv2/core/mat.hpp>
 #include "Scene.hpp"
 
+/**
+ * @brief Render functions
+ */
 namespace arfs::Renderer
 {
     /**
