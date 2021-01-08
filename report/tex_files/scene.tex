@@ -45,25 +45,80 @@
 
         \subsection{Scène}
 
-        La scène contiendra tous les objets 
+            La scène est un regroupement de tous les objets ainsi que de la caméra. Afin de rendre donner une liberté à l'utilisateur et de ne pas recompiler à chaque fois le programme, nous avons défini un format CSV \emph{.scene} (figure \ref{fig:scene}) qui défini chaque objet de la scène ainsi que leur position et leur rotation.
 
+            \begin{figure}[h]
+                \centering
+                \includegraphics[scale=0.8]{img/rendu/scene.png}
+                \caption{Fichier CSV \emph{.scene}}
+                \label{fig:scene}
+            \end{figure}
+
+            Chaque champ est optionnel, à l'exception du premier qui défini l'objet à charger. Un champ vide prendra une valeur par défaut inscrite dans le code.
+
+            Notre méthode pour le placement et l'échelle des objets à cependant un défaut. Il faut déterminer à la main la bonne position et la bonne échelle pour que l'objet soit visible et au bon endroit. En effet, deux logiciels de modélisation n'enregistre pas l'échelle de la même façon. Par exemple, avec Blender, une échelle entre 45 et 55 est idéale. Tous les \emph{.obj} fournis dans le projet ont été créés par nous-même sous Blender.
 
         \subsection{Lumière}
         \label{subsubsec:lumiere}
 
         Une méthode d'ombrage plat (\textit{Flat Shading}) a été implémentée afin de rendre l'apparence des objets plus réaliste.
 
-        La lumière est représentée par un vecteur qui donne sa direction. La luminosité d'une face de l'objet est calculée en fonction de l'angle entre sa normale et la direction de la lumière.
+        La lumière est représentée par un vecteur qui donne sa direction. Afin de déterminer l'éclairage d'une face, nous utilisons la normale définie dans le \emph{.obj}. Nous ne souhaitons qu'une seule illumination par face, nous calculons alors la moyenne des normales des sommets que nous enregistrons dans la face avec la couleur et les points. 
 
+        % TODO: reprendre une autre image
         \begin{figure}[!h]
             \centering
-            \includegraphics[scale=0.5]{img/flat_shading.png}
+            \includegraphics[scale=0.5]{img/rendu/flat_shading.png}
             \caption{Ombrage plat sur les objets à partir d'une source lumineuse représentée par les flèches rouges}
+            \label{fig:lumiere}
         \end{figure}
 
-    \section{Projection et caméra}
+        Ensuite, la luminosité est calculée pour chaque face en fonction de l'angle entre sa normale et la direction de la lumière. Plus l'angle est proche de 0°, plus les vecteurs sont alignés et donc plus la face est dans l'ombre. Inversement, plus l'angle est proche de 180°, plus la face est éclairée. Cet angle est normalisé puis multiplié à la couleur de la face. Nous pouvons voir cette effet, avec les matériaux, dans la figure \ref{fig:lumiere}. Le rendu sera expliqué dans la partie suivante.
+
+    \section{Caméra et projection}
+        Après avoir chargé les objets dans la scène 3D, il faut projeter ses objets sur l'image en fonction du tag. Nous utilisons cette relation :
+        \begin{equation*}
+            \begin{pmatrix}
+                u \\ v \\ 1
+            \end{pmatrix}
+            = K.P.E.
+            \begin{pmatrix}
+                x_w \\ y_w \\ z_w \\ 1
+            \end{pmatrix}
+        \end{equation*}
+        avec $u,v$ les coordonnées dans le plan image en pixels, $K.P$ les paramètres intrinsèques de la caméra, $E$ les rotations et translation de la caméra dans le repère monde et $x_w, y_w, z_w$ les coordonnées du point 3D dans le repère monde.
 
         \subsection{Calibration}
-        
+            Afin de déterminer les paramètres intrinsèques de la caméra, nous avons développé une fonction pour les calculer. Elle se base sur la prise de photos de checkerboard tel que la figure \ref{fig:checkerboard}.
+
+            \begin{figure}[!h]
+                \centering
+                \includegraphics[scale=0.3]{img/rendu/checkerboard.jpg}
+                \caption{Exemple de checkerboard}
+                \label{fig:checkerboard}
+            \end{figure}
+
+            Des images de différents angles sont nécessaires. Après quelques essais, environ 5-6 images sont suffisantes pour estimer les paramètres. La méthode se base principalement sur la fonction \emph{cv::calibrateCamera} d'OpenCV. Elle prend en paramètres les coordonnées des points 3D et leur correspondance sur l'image (les points 2D). Étant donné que le checkerboard est connu, on peut donner des coordonnées à chaque coins des carrés en supposant que $z=0$, ces points étant sur le même plan. Les coins du checkerboard sur l'image peuvent être trouvés par la fonction \emph{cv::findChessboardCorners} d'OpenCV.
+
+            Après avoir calculer les paramètres intrinsèques, nous les enregistrons dans un format texte avec l'extension \emph{.cam} (figure \ref{fig:cam})
+
+            \begin{figure}[!h]
+                \centering
+                \includegraphics[scale=0.8]{img/rendu/cam.png}
+                \caption{Fichier \emph{.cam} représentant les paramètres intrinsèques}
+                \label{fig:cam}
+            \end{figure}
+
+            Ce fichier se compose d'une matrice 3x3 représentant les paramètres intrinsèques ainsi :
+            \begin{equation*}
+                \begin{pmatrix}
+                    f_x & s & x_0 \\
+                    0 & f_y & y_0 \\
+                    0 & 0 & 1
+                \end{pmatrix}
+            \end{equation*}
+            $f$ est la distance focale en pixels. Dans une caméra parfaite, $fx$ et $f_y$ sont égaux mais dans les faits, ils peuvent différés, ce qui cause des pixels non carrés. $s$ est une distortion de l'image, souvent égale à 0, ce qui est suffisant dans notre cas. Enfin $(x_0, y_0)$ est le centre optique de l'image, l'intersection entre l'axe optique et le plan image. Il est en général plus ou moins au centre de l'image. 
+
         \subsection{Projection}
         % TODO: expliquer l'extraction de z via l'homographie
+        % TODO: algorithme du peintre

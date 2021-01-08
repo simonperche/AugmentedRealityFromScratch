@@ -192,6 +192,7 @@ La détection du tag est une partie crutiale de cette application de réalité a
             ... 
 
             Cependant, dans le cas où la caméra aie prise l'image à l'envers, le tag candidat sera inversé par rapport au modèle à comparer. Le candidat, bien que valide, ne serait donc pas détecté. Pour contrer cela, nous allons par quatre fois effectuer une rotation sur l'ordre des points du contours pour tester toutes les orientations possibles.
+            % TODO: permet l'orientation du modèle
 
 
         \begin{figure}[h]
@@ -270,7 +271,7 @@ La détection du tag est une partie crutiale de cette application de réalité a
             \caption{Le tag est détecté, mais un angle n'est pas bien géré}
         \end{figure}
 
-        Pour éviter de dégrader la détection des contours lors des frames suivantes du flux vidéo, nous ne réalisons pas de tracking sur le tag que nous avons détecté à l'aide des méthodes d'optimisations, car il sera éventuellement possible de trouver un tag parfait lors de la frame suivante, qui serait de meilleur qualité qu'un tag de moins bonne qualité tracké par rapport à celui de la frame précédante.
+        Pour éviter de dégrader la détection des contours lors des frames suivantes du flux vidéo, nous ne réalisons pas de tracking sur le tag que nous avons détecté à l'aide des méthodes d'optimisations, car il sera éventuellement possible de trouver un tag parfait lors de la frame suivante, qui serait de meilleur qualité qu'un tag de moins bonne qualité tracké par rapport à celui de la frame précédente.
 
         Cette petite marge d'erreur permet entre autre également de gérer partiellement l'occlusion du tag. En effet, un obstacle de petite taille cachant seulement quelques cases du tag peut ne pas poser de problème à sa détection, étant donné que les autres cases du tag seraient tout de même détectées.
 
