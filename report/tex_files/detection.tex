@@ -4,13 +4,13 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
     \section{Détection complète}
 
-    La détection du tag consiste à récupérer toutes les formes qui pourraient correspondre au tag dans l'image, puis de trouver la forme qui correspond au véritable tag que nous cherchons. L'orientation et la distance du tag détecté servira ensuite pour projeter les objets dans la scène.
+    La détection du tag consiste à récupérer toutes les formes qui pourraient correspondre au tag dans l'image, puis de trouver la forme qui correspond au véritable tag que nous cherchons. L'orientation et la distance du tag détecté serviront ensuite pour projeter les objets dans la scène.
 
     Une fois le tag détecté, l'application tentera de le tracker lors des images suivantes de la vidéo, afin de gagner en temps de calcul en évitant de refaire tout le processus et de stabiliser le rendu. Si le tracking ne parvient pas à suivre le tag (mouvement trop important de la caméra par exemple), une nouvelle détection complète est effectuée.
 
         \subsection{Modèle de tag}
 
-        Le tag consiste à une grille en deux dimensions qui représente un code binaire matérialisé par des cases noires ou blanches.
+        Le tag consiste en une grille en deux dimensions qui représente un code binaire matérialisé par des cases noires ou blanches.
 
         \begin{figure}[!h]
             \centering
@@ -22,25 +22,26 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
         Ce tableau est créé au lancement de l'application, avec l'image du tag passé en paramètre.
 
-        Le même processus est réalisé pour un tag qui sera détecté dans l'image. Son code sera lu puis découpé dans un tableau de 64 éléments et les deux tableaux seront comparés et déterminer si le contenu des deux codes correspond.  
+        Le même processus est réalisé pour un tag qui sera détecté dans l'image. Son code sera lu puis découpé dans un tableau de 64 éléments et les deux tableaux seront comparés et déterminés si le contenu des deux codes correspond.  
 
         \subsection{Extraction des tags potentiels}
 
         La première étape consiste à sortir de l'image les quadrilatères qui peuvent potentiellement correspondre à des tags.
 
-        Pour cela, un prétraitement est d'abord effectué sur l'image. L'image est convertie en niveau de gris puis binarisée à l'aide d'un seuillage adaptatif (une valeur de seuil sera determinée en fonction des régions, qui peut différer donc d'une région à l'autre).
+        Pour cela, un prétraitement est d'abord effectué sur l'image. L'image (figure \ref{fig:seuil}) est convertie en niveau de gris puis binarisée à l'aide d'un seuillage adaptatif (une valeur de seuil sera déterminée en fonction des régions, qui peut différer donc d'une région à l'autre).
 
         \begin{figure}[!h]
             \centering
             \includegraphics[scale=0.25]{img/threshold.png}
             \caption{Image seuillée}
+            \label{fig:seuil}
         \end{figure}
 
         Une fois l'image binarisée, nous pouvons effectuer une détection de contours sur cette dernière.
 
         La méthode \verb|cv::findContours|, que nous utilisons fournie par OpenCV, renvoie pour chaque contour détecté une liste de points. Nous souhaitons à partir de ces points créer une forme qui va recouvrir le contour. Pour cela, nous allons générer une enveloppe convexe pour ces points.
 
-        C'est à dire que nous allons englober de manière la plus optimale possible tous les points communs à un contour dans une forme convexe.
+        C'est-à-dire que nous allons englober de manière la plus optimale possible tous les points communs à un contour dans une forme convexe.
 
         \begin{figure}[!h]
             \centering
@@ -48,11 +49,11 @@ La détection du tag est une partie cruciale de cette application de réalité a
             \caption{Chaque contour de l'image est englobé}
         \end{figure}
 
-        Certains contours détectés peuvent être formés de manière complexe (enchaînements de points pour au final un polygone avec un petit nombre de côtés) et risquerons de fausser la détection de contours quadrilatères. Pour chaque contours, nous effectuons un nettoyage. 
+        Certains contours détectés peuvent être formés de manière complexe (enchaînements de points pour au final un polygone avec un petit nombre de côtés) et risqueront de fausser la détection de contours quadrilatères. Pour chaque contour, nous effectuons un nettoyage. 
 
-        Pour chaque triplet de points adjacents, les angles entre celui du milieu et les deux autres sont calculés. Si la différence est inférieur à un certain seuil (5\degree en pratique), le point du milieu est supprimé. Ainsi tous les points alignés sont supprimés. 
+        Pour chaque triplet de points adjacents, les angles entre celui du milieu et les deux autres sont calculés. Si la différence est inférieure à un certain seuil (5\degree en pratique), le point du milieu est supprimé. Ainsi tous les points alignés sont supprimés. 
 
-        Les coins peuvent contenir plusieurs points, non alignés, mais non nécessaire pour la détection. Nous créons alors des groupes de points adjacents avec une distance seuil (20 pixels en pratique). Puis chacun des groupes est remplacé un point, le centre du groupe.
+        Les coins peuvent contenir plusieurs points, non alignés, mais non nécessaires pour la détection. Nous créons alors des groupes de points adjacents avec une distance seuil (20 pixels en pratique). Puis chacun des groupes est remplacé un point, le centre du groupe.
 
         Avec ces contours désormais nettoyés, nous pouvons récupérer tous les contours d'exactement 4 sommets, qui correspondent à tous les candidats pour être le tag que nous recherchons.
 
@@ -77,7 +78,7 @@ La détection du tag est une partie cruciale de cette application de réalité a
             \caption{On cherche a estimer l'homographie entre ces deux représentations du tag candidat pour le redresser}
         \end{figure}
 
-        L'estimation de l'homographie est en effet une transformation entre deux plans qui nous permettera de stocker dans une matrice d'homographie les informations relatives notamment à la rotation et translation entre ces deux plans.
+        L'estimation de l'homographie est en effet une transformation entre deux plans qui nous permettra de stocker dans une matrice d'homographie les informations relatives notamment à la rotation et la translation entre ces deux plans.
 
         \textbf{\textit{Estimation de la matrice d'homographie}}
 
@@ -93,7 +94,7 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
         \begin{itemize}
             \item $ p_i $ correspondant aux points de départ, ou ici de l'image déformée.
-            \item $ p'_i $ correspondant aux points d'arrivés, ou ici d'un cadre droit, la forme visée.
+            \item $ p'_i $ correspondant aux points d'arrivées, ou ici d'un cadre droit, la forme visée.
         \end{itemize}
             
         Nous pouvons développer donc pour tout point $p_i$ :
@@ -118,7 +119,7 @@ La détection du tag est une partie cruciale de cette application de réalité a
             \end{pmatrix}
             \]
         
-        L'objectif est donc de déterminer la matrice H telle que :
+        L'objectif est donc de déterminer la matrice H tel que :
     
         \begin{center}
         $ H = \begin{pmatrix} h1 & h2 & h3 \\ h4 & h5 & h6 \\ h7 & h8 & h9 \end{pmatrix} $
@@ -144,10 +145,10 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
         Nous nous retrouvons sous la forme d'un système de 2 équations à 9 inconnues.
 
-        On observe du coup qu'un couple de point mène donc à deux équations qui permettent de résoudre $H$.
-    
-        Nous pouvons d'ailleurs par avance résoudre h9, car dans le cas d'une homographie, nous avons toujours $h9 = 1$.
-    
+        On observe du coup qu'un couple de points mène donc à deux équations qui permettent de résoudre $H$. 
+        
+        Nous pouvons d'ailleurs par avance résoudre h9, car dans le cas d'une homographie, nous avons toujours $h9 = 1$. 
+        
         Il nous reste huit inconnues à résoudre : 4 points sont alors nécessaires pour générer 8 équations dans le système, dont on considère $h9$ comme déjà résolu : 
 
         \[
@@ -170,9 +171,9 @@ La détection du tag est une partie cruciale de cette application de réalité a
         \begin{pmatrix} x'_1 \\ y'_1 \\ x'_2 \\ y'_2 \\ x'_3 \\ y'_3 \\ x'_4 \\ y'_4 \end{pmatrix} 
         \]
     
-        Nous disposons de ces couples de points dans notre cas car nous avons déjà détecté d'une part les coins du tag candidat que l'on cherche à redresser, et d'autre part nous connaissons déjà les coordonnées des points d'arrivée, sous la forme d'un carré. Nous pouvons donc créer ce système d'équation à partir de ces quatre couples de points.
+        Nous disposons de ces couples de points dans notre cas, car nous avons déjà détecté d'une part les coins du tag candidat que l'on cherche à redresser, et d'autre part nous connaissons déjà les coordonnées des points d'arrivée, sous la forme d'un carré. Nous pouvons donc créer ce système d'équations à partir de ces quatre couples de points.
 
-        Un pivot de Gauss est réalisé sur ce système d'équations. Une fois ce pivot résolu, nous obtenons une matrice en "row echelon form", c'est à dire :
+        Un pivot de Gauss est réalisé sur ce système d'équations. Une fois ce pivot résolu, nous obtenons une matrice en "row echelon form", c'est-à-dire :
     
         \begin{itemize}
             \item Toutes les lignes qui ne sont pas entièrement constituées de 0 commencent par un 1
@@ -181,23 +182,20 @@ La détection du tag est une partie cruciale de cette application de réalité a
         \end{itemize}
     
         Nous effectuons en conséquence une "back substitution" pour faire apparaître la solution sur la dernière colonne.
-    
         La dernière colonne du système est donc la résolution de la matrice $H$, qui nous donne notre matrice d'homographie.
-
         Cette méthode permet d'estimer de manière fiable la matrice d'homographie entre l'image avec le candidat et une image droite.
-
         
             \subsubsection{Warp Perspective}
 
-            Maintenant que la matrice d'homographie est établie, nous devons l'utiliser pour redresser l'image deformée dans la forme souhaitée.
+            Maintenant que la matrice d'homographie est établie, nous devons l'utiliser pour redresser l'image déformée dans la forme souhaitée.
 
             Pour chaque point de l'image d'arrivée, il faut appliquer la formule suivante :
             \begin{equation*}
                 \text{dst}\left(x,y\right) = \text{src}\left(\frac{h1*x + h2*y + h3}{h7*x + h8*y + h9}, \frac{h4*x + h5*y + h6}{h7*x + h8*y + h9}\right)
             \end{equation*}
-            avec $(x, y)$ le pixel courant. Étant donné que l'on cherche l'on cherche les pixels du carré, il faut d'abord inverser l'homographie.
+            avec $(x, y)$ le pixel courant. Étant donné que l'on cherche les pixels du carré, il faut d'abord inverser l'homographie.
 
-            Cependant, dans le cas où la caméra aie prise l'image à l'envers, le tag candidat sera inversé par rapport au modèle à comparer. Le candidat, bien que valide, ne serait donc pas détecté. Pour contrer cela, nous allons par quatre fois effectuer une rotation sur l'ordre des points du contours pour tester toutes les orientations possibles. Cela permet également d'obtenir la bonne rotation lors de l'extraction de la matrice de projection (partie \ref{subsec:projection}).
+            Cependant, dans le cas où la caméra ait pris l'image à l'envers, le tag candidat sera inversé par rapport au modèle à comparer. Le candidat, bien que valide, ne serait donc pas détecté. Pour contrer cela, nous allons par quatre fois effectuer une rotation sur l'ordre des points du contour pour tester toutes les orientations possibles. Cela permet également d'obtenir la bonne rotation lors de l'extraction de la matrice de projection (partie \ref{subsec:projection}).
 
         \begin{figure}[h]
             \centering
@@ -207,7 +205,6 @@ La détection du tag est une partie cruciale de cette application de réalité a
             \caption{Warp Perspective sur la première image pour recadrer le tag potentiel}
         \end{figure}
             
-
         \subsection{Résumé de la procédure}
 
         Pour résumer, la détection du tag consiste à :
@@ -223,7 +220,7 @@ La détection du tag est une partie cruciale de cette application de réalité a
         \end{itemize}
 
     \section{Tracking}
-        Nous avons souhaité intégrer un système de tracking afin d'augmenter les performances et de stabiliser le rendu. Pour cela, au lieu de faire une détection complète, nous initialisions au début un tracker d'OpenCV. Nous avons trouvé un compromis entre temps de calcul et précision dans le modèle \verb|KCF|. Nous avons implémenté un wrapper autour du tracker pour gérer plusieurs à la fois. 
+        Nous avons souhaité intégrer un système de tracking afin d'augmenter les performances et de stabiliser le rendu. Pour cela, au lieu de faire une détection complète, nous initialisions au début un tracker d'OpenCV. Nous avons trouvé un compromis entre temps de calcul et précision dans le modèle \verb|KCF|. Nous avons implémenté un wrapper autour du tracker pour gérer plusieurs points à la fois. 
 
         Ensuite, à chaque image, nous mettons à jour les points du tag trackés. Si le tracking a fonctionné, nous comparons le modèle tracké avec le tag connu (en utilisant l'homographie). S'il est détecté, la fonction renvoie les points trackés. Sinon une détection complète est réeffectuée. Cela permet d'éviter de calculer les candidats potentiels à chaque image.
 
@@ -252,7 +249,7 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
         Pour cela, on va considérer que le flou est causé par un flou gaussien. L'objectif est de soustraire l'image floutée par sa propre image non floutée.
 
-        Nous appliquons un flou gaussien sur l'image bruitée. Ensuite, nous calculons la somme pondérée de l'image d'entrée et l'image floutée, avec un poids de $1.5$ pour l'image d'entrée et un poids de $-0.5$ pour l'image floutée. Nous prenons en réalité l'image bruitée par le flou de mouvement, auquel nous soustrayons l'image floutée par le filtre gaussien. Ceci permet d'éliminer une partie du flou sur l'image original et d'affiner les contours.
+        Nous appliquons un flou gaussien sur l'image bruitée. Ensuite, nous calculons la somme pondérée de l'image d'entrée et l'image floutée, avec un poids de $1.5$ pour l'image d'entrée et un poids de $-0.5$ pour l'image floutée. Nous prenons en réalité l'image bruitée par le flou de mouvement, à laquelle nous soustrayons l'image floutée par le filtre gaussien. Ceci permet d'éliminer une partie du flou sur l'image original et d'affiner les contours.
 
         \subsection{Marge d'acceptation de détection du tag}
 
@@ -260,11 +257,15 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
         Lors du mouvement de la caméra, il peut arriver que le flou de mouvement empiète sur certaines cases et modifie légèrement le résultat, ce qui en conséquence écarte le tag de la recherche.
 
-        Nous pouvons en conséquence tolérer un seuil d'acceptation du tag, où si jamais entre 5 et 10 \% des cases du potentiel tag ne corrèlent pas au modèle, le candidat est quand même accepté comme étant le tag, car si observons une correspondance par exemple sur 56 cases du tag sur les 64, nous pouvons être quasiment sûr qu'il s'agit bien du tag que nous recherchons.
+        Nous pouvons en conséquence tolérer un seuil d'acceptation du tag, où entre 5 et 10 \% des cases du potentiel tag ne corrèlent pas au modèle, le candidat est quand même accepté comme étant le tag, car si observons une correspondance par exemple sur 56 cases du tag sur les 64, nous pouvons être quasiment sûr qu'il s'agit bien du tag que nous recherchons.
 
         \subsection{Résultats}
 
         Les deux méthodes indépendamment améliorent, mais pas de façon considérable les résultats, mais en les combinant nous parvenons à avoir une détection plus robuste.
+
+        Vidéo 1 : Vidéo de plutôt bonne qualité, le tag sort de l'écran une seconde
+
+        Vidéo 2 : Vidéo de mauvaise qualité, plus de mouvement de la caméra, le tag est plus petit et légèrement froissé.
 
         \begin{table}[!h]
             \begin{center}
@@ -279,10 +280,6 @@ La détection du tag est une partie cruciale de cette application de réalité a
         \caption{Taux de détection du tag par vidéo}
         \end{table}
 
-        Vidéo 1 : Vidéo de plutôt bonne qualité, le tag sort de l'écran une seconde
-
-        Vidéo 2 : Vidéo de mauvaise qualité, plus de mouvement de la caméra, le tag est plus petit et légèrement froissé.
-
         Bien que la détection avec ces méthodes reste généralement de bonne qualité, il y a malgré tout plus de risque d'avoir une détection dégradée, comme il peut être observé sur l'image \ref{fig:cropped_tag}.
 
         \begin{figure}[!h]
@@ -292,13 +289,13 @@ La détection du tag est une partie cruciale de cette application de réalité a
             \label{fig:cropped_tag}
         \end{figure}
 
-        Pour éviter de dégrader la détection des contours lors des frames suivantes du flux vidéo, nous ne réalisons pas de tracking sur le tag que nous avons détecté à l'aide des méthodes d'optimisations, car il sera éventuellement possible de trouver un tag parfait lors de la frame suivante, qui serait de meilleur qualité qu'un tag de moins bonne qualité tracké par rapport à celui de la frame précédente.
+        Pour éviter de dégrader la détection des contours lors des frames suivantes du flux vidéo, nous ne réalisons pas de tracking sur le tag que nous avons détecté à l'aide des méthodes d'optimisations, car il sera éventuellement possible de trouver un tag parfait lors de la frame suivante, qui serait de meilleure qualité qu'un tag de moins bonne qualité tracké par rapport à celui de la frame précédente.
 
-        Cette petite marge d'erreur permet entre autre également de gérer partiellement l'occlusion du tag. En effet, un obstacle de petite taille cachant seulement quelques cases du tag peut ne pas poser de problème à sa détection, étant donné que les autres cases du tag seraient tout de même détectées.
+        Cette petite marge d'erreur permet entre autres également de gérer partiellement l'occlusion du tag. En effet, un obstacle de petite taille cachant seulement quelques cases du tag peut ne pas poser de problème à sa détection, étant donné que les autres cases du tag seraient tout de même détectées.
 
         \begin{figure}[!h]
             \centering
-            \includegraphics[scale=0.4]{img/tag_occlusion.png}
+            \includegraphics[scale=0.35]{img/tag_occlusion.png}
             \caption{Tag détecté obstrué}
             \label{fig:tag_occlusion}
         \end{figure}

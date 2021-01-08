@@ -1,0 +1,36 @@
+\part{Implémentation}
+
+Le projet est découpé en différentes classes. La description de chaque classe est disponible dans le dossier \emph{documentation/}. Ce projet défini un namespace \emph{arfs} où toutes les fonctionnalités sont contenues. Il existe également plusieurs sous-namespaces :
+\emph{
+\begin{itemize}
+    \item arfs::Utils
+    \item arfs::Utils::Geometry
+    \item arfs::Utils::Image
+    \item arfs::Utils::CV
+    \item arfs::Renderer
+\end{itemize}
+}
+\section*{Arguments en ligne de commande}
+Afin de rendre l'utilisation plus simple, nous avons ajouté un certain nombre d'arguments pour lancer le programme en ligne de commande avec différents paramètres. Le tableau \ref{table:args} précise chacun des arguments disponibles.
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{\textwidth}{|l|X|}
+        \hline
+        Argument & Description \\ \hline \hline
+        \verb([--webcam | -w] id( & Utilise une webcam comme entrée video. L'id est un nombre et commence à 0 pour la première webcam branchée.  \\ \hline
+        \verb([--video | -v] filename( & Utilise une vidéo comme entrée video \\ \hline
+        \verb([--tag | -t] filename( & Chemin de l'image du tag à détecter \\ \hline
+        \verb([--camera-parameters | -p] filename( & Chemin du fichier \emph{.cam} contenant les paramètres intrinsèques de la caméra \\ \hline
+        \verb([--scene | -s] filename( & Chemin du fichier \emph{.scene} \\ \hline
+        \verb([--calibrate | -c]( & Flag pour calibrer ou non la caméra\\ \hline
+        \verb(--checker-size-width size( & Taille en largeur du checkerboard\\ \hline
+        \verb(--checker-size-height size( & Taille en hauteur du checkerboard\\ \hline
+        \verb(--images-folder( & Chemin du dossier contenant les images (ou où sauvegarder les images) de calibration \\ \hline
+        \verb([--take-pictures]( & Flag permettant de prendre des images pour la calibration \\ \hline
+        \verb([--help | -h]( & Affiche l'aide \\
+        \hline
+    \end{tabularx}
+    \caption{Arguments en ligne de commande}
+    \label{table:args}
+\end{table}
