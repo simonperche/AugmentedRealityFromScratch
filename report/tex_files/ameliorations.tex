@@ -1,4 +1,5 @@
 \part{Perspectives d'améliorations}
+\label{part:ameliorations}
 
 \section{Détection de tag}
 
@@ -10,14 +11,9 @@
 
 \section{Techniques de rendu}
 
-    \subsection{Performance}
-
-    %TODO:
-
     \subsection{Détection des sources lumineuses}
 
     La lumière dans ce système de réalité augmenté est géré statiquement : le vecteur représentant la direction de la lumière est invariant selon l'image.
-
     Détecter les sources lumineuses sur l'image pour modifier image par image la direction de la lumière aurait pu être une manière intéressante d'augmenter le réalisme de l'application, bien que cette détection de source de lumière sur l'image se serait avéré être une tâche probablement nécessitant du temps.
 
     \subsection{Ombrage de Gouraud}
@@ -31,3 +27,7 @@
         \includegraphics[scale=0.25]{img/shading.png}
         \caption{L'interpolation utilisée dans l'ombrage de Gouraud et de Phong lisse la surface de l'objet et améliore le réalisme du rendu}
     \end{figure}
+
+    \subsection{Performance}
+
+    Nous utilisons OpenCV, bibliothèque de traitement d'image pour le rendu, et non un moteur de rendu spécialisé. Nous avons donc été limité dans certains choix pour cause de performance. L'ombrage plat et la couleur unique pour les faces sont les exemples les plus importants.
