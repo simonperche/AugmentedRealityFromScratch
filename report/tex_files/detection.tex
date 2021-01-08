@@ -187,7 +187,7 @@ La détection du tag est une partie cruciale de cette application de réalité a
         Cette méthode permet d'estimer de manière fiable la matrice d'homographie entre l'image avec le candidat et une image droite.
 
         
-            \subsubsection{Wrap Perspective}
+            \subsubsection{Warp Perspective}
 
             Maintenant que la matrice d'homographie est établie, nous devons l'utiliser pour redresser l'image deformée dans la forme souhaitée.
 
@@ -204,7 +204,7 @@ La détection du tag est une partie cruciale de cette application de réalité a
             \subfloat[][Image originale]{\includegraphics[width=0.48\linewidth]{img/beforewrap.png}}
             \hspace{.02\textwidth}
             \subfloat[][Tag potentiel extrait]{\includegraphics[width=0.35\linewidth]{img/afterwrap.png}}
-            \caption{Wrap Perspective sur la première image pour recadrer le tag potentiel}
+            \caption{Warp Perspective sur la première image pour recadrer le tag potentiel}
         \end{figure}
             
 
@@ -214,15 +214,31 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
         \begin{itemize}
             \item Réaliser un seuillage adaptatif sur l'image
+            \item Calculer les contours
             \item Réaliser un convex hull sur les contours
             \item Nettoyer les contours
             \item Estimer l'homographie
-            \item Effectuer la Wrap Perspective
+            \item Effectuer la Warp Perspective
             \item Comparer au modèle de tag
         \end{itemize}
 
-    \subsection{Tracking}
+    \section{Tracking}
+        Nous avons souhaité intégrer un système de tracking afin d'augmenter les performances et de stabiliser le rendu. Pour cela, au lieu de faire une détection complète, nous initialisions au début un tracker d'OpenCV. Nous avons trouvé un compromis entre temps de calcul et précision dans le modèle \verb|KCF|. Nous avons implémenté un wrapper autour du tracker pour gérer plusieurs à la fois. 
 
+        Ensuite, à chaque image, nous mettons à jour les points du tag trackés. Si le tracking a fonctionné, nous comparons le modèle tracké avec le tag connu (en utilisant l'homographie). S'il est détecté, la fonction renvoie les points trackés. Sinon une détection complète est réeffectuée. Cela permet d'éviter de calculer les candidats potentiels à chaque image.
+
+        La stabilisation fonctionne bien, en rajoutant une distance seuil en dessous de laquelle les points du tag ne seront pas mis à jour. Cependant, comme nous pouvons le voir sur dans le tableau \ref{table:tracking}, et contrairement à notre idée première, le tracking n'améliore pas les performances, celui-ci étant coûteux également. L'écart n'est très pas significatif et nous estimons donc que les performances sont égales avec ou sans tracking.
+
+        \begin{table}[!h]
+            \begin{center}
+                \begin{tabular}{c|c|c}
+                 & Sans tracking & Avec tracking \\ \hline
+                Temps moyen par frame (en ms) & 22.2136 & 25.2955 \\ 
+                \end{tabular}
+            \end{center}
+            \caption{Performance du tracking}
+            \label{table:tracking}
+        \end{table}
     
     \section{Amélioration de la détection du tag}
 
@@ -248,9 +264,9 @@ La détection du tag est une partie cruciale de cette application de réalité a
 
         \subsection{Résultats}
 
-        Les deux méthodes indépendamment améliorent, mais pas de façon considérable, les résultats, mais en les combinant nous parvenons à avoir une détection plus robuste.
+        Les deux méthodes indépendamment améliorent, mais pas de façon considérable les résultats, mais en les combinant nous parvenons à avoir une détection plus robuste.
 
-        \begin{figure}[!h]
+        \begin{table}[!h]
             \begin{center}
                 \begin{tabular}{ | c | c | c | c | c | }
                 \hline
@@ -261,24 +277,30 @@ La détection du tag est une partie cruciale de cette application de réalité a
                 \end{tabular}
         \end{center}
         \caption{Taux de détection du tag par vidéo}
-        \end{figure}
+        \end{table}
 
         Vidéo 1 : Vidéo de plutôt bonne qualité, le tag sort de l'écran une seconde
 
         Vidéo 2 : Vidéo de mauvaise qualité, plus de mouvement de la caméra, le tag est plus petit et légèrement froissé.
 
-        Bien que la détection avec ces méthodes reste généralement de bonne qualité, il y a malgré tout plus de risque d'avoir une détection d'être dégradée, comme il peut être observé sur l'image ci-dessous.
+        Bien que la détection avec ces méthodes reste généralement de bonne qualité, il y a malgré tout plus de risque d'avoir une détection dégradée, comme il peut être observé sur l'image \ref{fig:cropped_tag}.
 
         \begin{figure}[!h]
             \centering
             \includegraphics[scale=0.25]{img/cropped_tag.png}
             \caption{Le tag est détecté, mais un angle n'est pas bien géré}
+            \label{fig:cropped_tag}
         \end{figure}
 
         Pour éviter de dégrader la détection des contours lors des frames suivantes du flux vidéo, nous ne réalisons pas de tracking sur le tag que nous avons détecté à l'aide des méthodes d'optimisations, car il sera éventuellement possible de trouver un tag parfait lors de la frame suivante, qui serait de meilleur qualité qu'un tag de moins bonne qualité tracké par rapport à celui de la frame précédente.
 
         Cette petite marge d'erreur permet entre autre également de gérer partiellement l'occlusion du tag. En effet, un obstacle de petite taille cachant seulement quelques cases du tag peut ne pas poser de problème à sa détection, étant donné que les autres cases du tag seraient tout de même détectées.
 
-        IMAGE OCCULSION TAG ? 
+        \begin{figure}[!h]
+            \centering
+            \includegraphics[scale=0.4]{img/tag_occlusion.png}
+            \caption{Tag détecté obstrué}
+            \label{fig:tag_occlusion}
+        \end{figure}
 
         De plus, ces méthodes d'optimisations ne permettent pas de détecter le tag lorsqu'il sort de l'écran.

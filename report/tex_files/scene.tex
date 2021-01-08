@@ -129,7 +129,7 @@
                 Afin de mettre à jour la matrice de projection, nous calculons tout d'abord une homographie $H_i$ entre les points du tag et un carré parfait comme défini dans la partie \ref{subsubsec:homographie}. Le calcul de l'homographie est une opération inversible, on peut facilement calculer l'homographie allant du carré parfait aux points du tag en inversant la matrice $H_i$, ce qui nous donne une matrice $H$. L'homographie $H$ contient les mêmes informations que la position la caméra $K.E$ ($E = [R|t]$). Il est nécessaire de la normaliser. 
 
                 On peut donc estimer la position de la caméra ainsi :
-                $R^1$ et $R^2$ sont les premières colonnes de $H$. $t$ est la dernière colonne de $H$. Étant donné que les rotations doivent orthogonales, car on se place dans un repère orthonormé 3D, on peut calculer $R^3$ avec le produit vectoriel de $R^1$ et $R^2$ donc $R^3 = R^1 \times R^2$.
+                $R^1$ et $R^2$ sont les premières colonnes de $H$. $t$ est la dernière colonne de $H$. Étant donné que les rotations doivent être orthogonales, car on se place dans un repère orthonormé 3D, on peut calculer $R^3$ avec le produit vectoriel de $R^1$ et $R^2$ donc $R^3 = R^1 \times R^2$.
 
                 En résumé nous avons :
                 \begin{equation*}
