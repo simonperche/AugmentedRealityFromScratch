@@ -10,6 +10,7 @@
 \usepackage{setspace}
 \usepackage{placeins}
 \usepackage{unnumberedtotoc}
+\usepackage{gensymb}
 
 \usepackage[top=30mm, bottom=30mm]{geometry}
 
@@ -28,7 +29,7 @@
 }
 
 \date{\today}
-\author{Simon Perche \\ Nicolas Lépy \\ \\
+\author{Mélanie Legros \\ Nicolas Lépy \\ Simon Perche \\ Hydriss Ruet \\
 Université de Technologie de Belfort-Montbéliard}
 \title{Projet IN5X - Rapport}
 
@@ -95,6 +96,7 @@ Université de Technologie de Belfort-Montbéliard}
 
     \clearpage
 
+    \setcounter{tocdepth}{2}
     {\hypersetup{linkcolor=black}
     \tableofcontents }
 
@@ -106,6 +108,8 @@ Université de Technologie de Belfort-Montbéliard}
     \include{tex_files/detection}
     \include{tex_files/scene}
     \include{tex_files/ameliorations}
+
+    \include{tex_files/conclusion}
     
 
 \end{document}

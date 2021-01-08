@@ -1,13 +1,12 @@
-\newpage
 \part{Détection du tag}
 
-La détection du tag est une partie crutiale de cette application de réalité augmentée. L'objectif est de récupérer les coordonnées du tag dans la caméra pour avoir les informations sur l'orientation et la distance de la scène à projeter sur l'image.
+La détection du tag est une partie cruciale de cette application de réalité augmentée. L'objectif est de récupérer les coordonnées du tag dans la caméra pour avoir les informations sur l'orientation et la distance de la scène à projeter sur l'image.
 
     \section{Détection complète}
 
-    Dans les grandes lignes, la détection du tag consiste à récupérer toutes les formes qui pourraient correspondre au tag dans l'image, puis de trouver la forme qui correspond au véritable tag que nous cherchons. L'orientation et la distance du tag détecté servira ensuite pour projeter les objets dans la scène.
+    La détection du tag consiste à récupérer toutes les formes qui pourraient correspondre au tag dans l'image, puis de trouver la forme qui correspond au véritable tag que nous cherchons. L'orientation et la distance du tag détecté servira ensuite pour projeter les objets dans la scène.
 
-    Une fois le tag détecté, l'application tentera de le tracker lors des images suivantes de la vidéo, afin de gagner en temps de calcul en évitant de refaire tout le processus. Si le tracking ne parvient pas à suivre le tag (mouvement trop important de la caméra par exemple), une nouvelle détection complète est effectuée.
+    Une fois le tag détecté, l'application tentera de le tracker lors des images suivantes de la vidéo, afin de gagner en temps de calcul en évitant de refaire tout le processus et de stabiliser le rendu. Si le tracking ne parvient pas à suivre le tag (mouvement trop important de la caméra par exemple), une nouvelle détection complète est effectuée.
 
         \subsection{Modèle de tag}
 
@@ -39,7 +38,7 @@ La détection du tag est une partie crutiale de cette application de réalité a
 
         Une fois l'image binarisée, nous pouvons effectuer une détection de contours sur cette dernière.
 
-        La méthode \textit{findContours}, que nous utilisons fournie par OpenCV, renvoie pour chaque contour détecté une liste de points. Nous souhaitons à partir de ces points créer une forme qui va recouvrir le contour. Pour cela, nous allons générer une enveloppe convexe pour ces points.
+        La méthode \verb|cv::findContours|, que nous utilisons fournie par OpenCV, renvoie pour chaque contour détecté une liste de points. Nous souhaitons à partir de ces points créer une forme qui va recouvrir le contour. Pour cela, nous allons générer une enveloppe convexe pour ces points.
 
         C'est à dire que nous allons englober de manière la plus optimale possible tous les points communs à un contour dans une forme convexe.
 
@@ -49,21 +48,24 @@ La détection du tag est une partie crutiale de cette application de réalité a
             \caption{Chaque contour de l'image est englobé}
         \end{figure}
 
-        Certains contours détectés peuvent être formés de manière complexe (enchaînements de points pour au final un polygone avec un petit nombre de côtés) et risquerons de fausser la détection de contours quadrilatères. Pour gérer cela, nous ajoutons une étape où les points proches entre eux ou alignés sur un contour sont supprimés.
+        Certains contours détectés peuvent être formés de manière complexe (enchaînements de points pour au final un polygone avec un petit nombre de côtés) et risquerons de fausser la détection de contours quadrilatères. Pour chaque contours, nous effectuons un nettoyage. 
 
-        EXPLIQUER ?
+        Pour chaque triplet de points adjacents, les angles entre celui du milieu et les deux autres sont calculés. Si la différence est inférieur à un certain seuil (5\degree en pratique), le point du milieu est supprimé. Ainsi tous les points alignés sont supprimés. 
 
-        Avec ces contours désormais nettoyés, nous pouvons récupérer tous les contours de forme quadrilatère, qui correspondent à tous les candidats pour être le tag que nous recherchons.
+        Les coins peuvent contenir plusieurs points, non alignés, mais non nécessaire pour la détection. Nous créons alors des groupes de points adjacents avec une distance seuil (20 pixels en pratique). Puis chacun des groupes est remplacé un point, le centre du groupe.
+
+        Avec ces contours désormais nettoyés, nous pouvons récupérer tous les contours d'exactement 4 sommets, qui correspondent à tous les candidats pour être le tag que nous recherchons.
 
         \subsection{Identification du tag correct}
 
         Tous les tags candidats sont ensuite comparés au modèle de tag que nous voulons reconnaître.
 
         \subsubsection{Homographie}
+        \label{subsubsec:homographie}
 
         Le candidat sur l'image est déformé par rapport au modèle de tag qui sera nécessaire afin de comparer les deux images.
 
-        Une première étape est en conséquence nécessaire pour redresser cette image afin qu'elle soit de la même taille et forme que l'image à comparer.
+        Une première étape est en conséquence indispensable pour redresser cette image afin qu'elle soit de la même taille et forme que l'image à comparer.
 
         Nous allons pour ceci estimer l'homographie entre l'image avec le candidat déformé et un carré parfait, la forme qui est visée et qui correspond au modèle de tag que nous possédons.
 
@@ -79,7 +81,7 @@ La détection du tag est une partie crutiale de cette application de réalité a
 
         \textbf{\textit{Estimation de la matrice d'homographie}}
 
-        Bien qu'OpenCV dispose de méthodes pour estimer une matrice d'homographie entre deux jeux de points, nous avons décidé de réimplémenter une solution d'estimation d'homographie.
+        Bien qu'OpenCV dispose de méthodes pour estimer une matrice d'homographie entre deux jeux de points, nous avons décidé de réimplémenter une solution afin de respecter le \emph{from scratch}.
 
         Comme vu précédemment, on cherche à établir la transformation entre deux images. C'est à dire, pour chaque couple de points $p_i \leftrightarrow p_{i}' $, nous cherchons la matrice $H$ telle que :
     
@@ -189,11 +191,13 @@ La détection du tag est une partie crutiale de cette application de réalité a
 
             Maintenant que la matrice d'homographie est établie, nous devons l'utiliser pour redresser l'image deformée dans la forme souhaitée.
 
-            ... 
+            Pour chaque point de l'image d'arrivée, il faut appliquer la formule suivante :
+            \begin{equation*}
+                \text{dst}\left(x,y\right) = \text{src}\left(\frac{h1*x + h2*y + h3}{h7*x + h8*y + h9}, \frac{h4*x + h5*y + h6}{h7*x + h8*y + h9}\right)
+            \end{equation*}
+            avec $(x, y)$ le pixel courant. Étant donné que l'on cherche l'on cherche les pixels du carré, il faut d'abord inverser l'homographie.
 
-            Cependant, dans le cas où la caméra aie prise l'image à l'envers, le tag candidat sera inversé par rapport au modèle à comparer. Le candidat, bien que valide, ne serait donc pas détecté. Pour contrer cela, nous allons par quatre fois effectuer une rotation sur l'ordre des points du contours pour tester toutes les orientations possibles.
-            % TODO: permet l'orientation du modèle
-
+            Cependant, dans le cas où la caméra aie prise l'image à l'envers, le tag candidat sera inversé par rapport au modèle à comparer. Le candidat, bien que valide, ne serait donc pas détecté. Pour contrer cela, nous allons par quatre fois effectuer une rotation sur l'ordre des points du contours pour tester toutes les orientations possibles. Cela permet également d'obtenir la bonne rotation lors de l'extraction de la matrice de projection (partie \ref{subsec:projection}).
 
         \begin{figure}[h]
             \centering
