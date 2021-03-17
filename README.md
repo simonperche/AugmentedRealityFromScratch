@@ -14,9 +14,8 @@ An augmented reality application from scratch using OpenCV for learning purpose.
 | Add normals support                      | Done         |
 | Add camera calibration                   | Done         |
 | Add materials support (only flat color)  | Done         |
-|                                          |              |
-| Stabilize detected tag                   | In dev       |
-| Improve the robustness of tag detection  | In dev       |
+| Stabilize detected tag                   | Done         |
+| Improve the robustness of tag detection  | Done         |
 
 
 ## Installation
